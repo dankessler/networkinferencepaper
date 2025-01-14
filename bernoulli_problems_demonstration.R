@@ -70,8 +70,12 @@ M_flat_poisson <- matrix(rep(2, n^2), nrow = n)
 # Simulation 1 - Poisson
 sim1_poisson_theta_record <- array(0, dim = c(length(gamma_check), num_sim_per_gamma_epsilon))
 sim1_poisson_theta_hat_record <- array(0, dim = c(length(gamma_check), num_sim_per_gamma_epsilon))
+sim1_poisson_varphi_record <- array(0, dim = c(length(gamma_check), num_sim_per_gamma_epsilon))
+sim1_poisson_varphi_hat_record <- array(0, dim = c(length(gamma_check), num_sim_per_gamma_epsilon))
 sim1_poisson_theta_ci_lower_record <- array(0, dim = c(length(gamma_check), num_sim_per_gamma_epsilon))
 sim1_poisson_theta_ci_upper_record <- array(0, dim = c(length(gamma_check), num_sim_per_gamma_epsilon))
+sim1_poisson_varphi_ci_lower_record <- array(0, dim = c(length(gamma_check), num_sim_per_gamma_epsilon))
+sim1_poisson_varphi_ci_upper_record <- array(0, dim = c(length(gamma_check), num_sim_per_gamma_epsilon))
 sim1_poisson_theta_coverage <- array(0, dim = c(length(gamma_check), num_sim_per_gamma_epsilon))
 
 # Simulation 2 - Bernoulli (flat M, "bad target" varphi)
@@ -259,6 +263,11 @@ for (gamma_epsilon_index in 1:num_epsilon_gamma_check) {
     sim1_poisson_theta_ci_lower_record[gamma_epsilon_index, rep] <- sim1_est - sim1_moe
     sim1_poisson_theta_ci_upper_record[gamma_epsilon_index, rep] <- sim1_est + sim1_moe
     sim1_poisson_theta_coverage[gamma_epsilon_index, rep] <- (sim1_est - sim1_moe <= sim1_mean) & (sim1_mean <= sim1_est + sim1_moe)
+
+    sim1_poisson_varphi_record[gamma_epsilon_index, rep] <- (1-eps) * sim1_mean
+    sim1_poisson_varphi_hat_record[gamma_epsilon_index, rep] <- (1-eps) * sim1_est
+    sim1_poisson_varphi_ci_lower_record[gamma_epsilon_index, rep] <- (1-eps) * (sim1_est - sim1_moe)
+    sim1_poisson_varphi_ci_upper_record[gamma_epsilon_index, rep] <- (1-eps) * (sim1_est + sim1_moe)
 
     # ------------------
     # -- Simulation 2 --
@@ -479,43 +488,135 @@ apply(sim6_xi_coverage, 1, mean)
 # -- Standardized plot controls --
 # --------------------------------
 
-axis.text.x.size <- 16
-axis.text.y.size <- 16
-axis.title.x.size <- 30
-axis.title.y.size <- 30
-legend.title.size <- 25
-legend.text.size <- 19
+axis.text.x.size <- 13
+axis.text.y.size <- 13
+axis.title.x.size <- 21
+axis.title.y.size <- 21
+legend.title.size <- 18
+legend.text.size <- 14.5
 
-thick_linewidth = 1.5
-thin_linewidth = 1.0
+legend.linewidth.thick <- 0.9
+legend.linewidth.thin <- 0.7
 
-line_alpha <- 0.7
+thick_linewidth = 1.0
+thin_linewidth = 0.9
 
-legend_values <- c('avg_theta' = 'seagreen3',
-                   'avg_theta_hat' = 'palegreen4',
+line_alpha <- 0.9
+
+# Creating a legend that is shared with all six plots
+legend_values <- c('avg_theta' = 'slateblue4',
+                   'avg_theta_hat' = 'slateblue2',
                    'avg_varphi' = 'slateblue1',
                    'avg_varphi_hat' = 'slateblue4',
-                   'avg_xi' = 'palevioletred3',
-                   'avg_xi_hat' = 'palevioletred4',
-                   'ci_bounds' = 'black')
+                   'avg_xi' = 'palevioletred4',
+                   'avg_xi_hat' = 'palevioletred3',
+                   'ci_bounds_theta' = 'slateblue2',
+                   'ci_bounds_varphi' = 'slateblue4',
+                   'ci_bounds_xi' = 'palevioletred3')
+legend_values_linetype <- c('avg_theta' = 'solid',
+                            'avg_theta_hat' = 'solid',
+                            'avg_varphi' = 'solid',
+                            'avg_varphi_hat' = 'solid',
+                            'avg_xi' = 'solid',
+                            'avg_xi_hat' = 'solid',
+                            'ci_bounds_theta' = 'dashed',
+                            'ci_bounds_varphi' = 'dashed',
+                            'ci_bounds_xi' = 'dashed')
 legend_labels <- c('avg_theta' = TeX('$\\theta(A^{(tr)})$'),
                    'avg_theta_hat' = TeX('$\\hat{\\theta}(A^{(tr)})$'),
                    'avg_varphi' = TeX('$\\varphi(A^{(tr)})$'),
                    'avg_varphi_hat' = TeX('$\\hat{\\varphi}(A^{(tr)})$'),
                    'avg_xi' = TeX('$\\xi(A^{(tr)})$'),
                    'avg_xi_hat' = TeX('$\\hat{\\xi}(A^{(tr)})$'),
-                   'ci_bounds' = TeX('90% CI'))
+                   'ci_bounds_theta' = TeX('90% CI for $\\theta(A^{(tr)})$'),
+                   'ci_bounds_varphi' = TeX('90% CI for $\\varphi(A^{(tr)})$'),
+                   'ci_bounds_xi' = TeX('90% CI for $\\xi(A^{(tr)})$'))
 
-unified_plot_levels <- c('avg_theta', 'avg_theta_hat', 'avg_varphi', 'avg_varphi_hat', 'avg_xi', 'avg_xi_hat', 'ci_bounds')
+unified_plot_levels <- c('avg_theta', 'avg_theta_hat', 'avg_varphi', 'avg_varphi_hat', 'avg_xi', 'avg_xi_hat', 'ci_bounds_theta', 'ci_bounds_varphi', 'ci_bounds_xi')
 shared_color_scale <- scale_color_manual(values = legend_values,
                                          labels = legend_labels,
                                          breaks = unified_plot_levels)
+shared_linetype_scale <- scale_linetype_manual(values = legend_values_linetype,
+                                               labels = legend_labels,
+                                               breaks = unified_plot_levels)
+
+# Creating a legend that separates into the three different rows and only
+# has the relevant variables
+legend_values_row1 <- c('avg_theta' = 'slateblue4',
+                        'avg_theta_hat' = 'slateblue2',
+                        'avg_varphi' = 'darkgreen',
+                        'avg_varphi_hat' = 'darkseagreen3',
+                        'ci_bounds_theta' = 'slateblue2',
+                        'ci_bounds_varphi' = 'darkseagreen3')
+legend_values_linetype_row1 <- c('avg_theta' = 'solid',
+                                 'avg_theta_hat' = 'solid',
+                                 'avg_varphi' = 'solid',
+                                 'avg_varphi_hat' = 'solid',
+                                 'ci_bounds_theta' = 'dashed',
+                                 'ci_bounds_varphi' = 'dashed')
+legend_labels_row1 <- c('avg_theta' = TeX('$\\theta(A^{(tr)})$'),
+                        'avg_theta_hat' = TeX('$\\hat{\\theta}(A^{(tr)})$ (left only)'),
+                        'avg_varphi' = TeX('$\\varphi(A^{(tr)})$'),
+                        'avg_varphi_hat' = TeX('$\\hat{\\varphi}(A^{(tr)})$'),
+                        'ci_bounds_theta' = TeX('90% CI for $\\theta(A^{(tr)})$ (left only)'),
+                        'ci_bounds_varphi' = TeX('90% CI for $\\varphi(A^{(tr)})$'))
+unified_plot_levels_row1 <- c('avg_theta', 'avg_theta_hat', 'avg_varphi', 'avg_varphi_hat', 'ci_bounds_theta', 'ci_bounds_varphi')
+shared_color_scale_row1 <- scale_color_manual(values = legend_values_row1,
+                                              labels = legend_labels_row1,
+                                              breaks = unified_plot_levels_row1)
+shared_linetype_scale_row1 <- scale_linetype_manual(values = legend_values_linetype_row1,
+                                                    labels = legend_labels_row1,
+                                                    breaks = unified_plot_levels_row1)
+
+legend_values_row2 <- c('avg_theta' = 'slateblue4',
+                        'avg_xi' = 'palevioletred4',
+                        'avg_xi_hat' = 'palevioletred3',
+                        'ci_bounds_xi' = 'palevioletred3')
+legend_labels_row2 <- c('avg_theta' = TeX('$\\theta(A^{(tr)})$'),
+                        'avg_xi' = TeX('$\\xi(A^{(tr)})$'),
+                        'avg_xi_hat' = TeX('$\\hat{\\xi}(A^{(tr)})$'),
+                        'ci_bounds_xi' = TeX('90% CI for $\\xi(A^{(tr)})$'))
+legend_values_linetype_row2 <- c('avg_theta' = 'solid',
+                                 'avg_xi' = 'solid',
+                                 'avg_xi_hat' = 'solid',
+                                 'ci_bounds_xi' = 'dashed')
+unified_plot_levels_row2 <- c('avg_theta', 'avg_xi', 'avg_xi_hat', 'ci_bounds_xi')
+shared_color_scale_row2 <- scale_color_manual(values = legend_values_row2,
+                                              labels = legend_labels_row2,
+                                              breaks = unified_plot_levels_row2)
+shared_linetype_scale_row2 <- scale_linetype_manual(values = legend_values_linetype_row2,
+                                                    labels = legend_labels_row2,
+                                                    breaks = unified_plot_levels_row2)
+
+legend_values_row3 <- c('avg_theta' = 'slateblue4',
+                        'avg_xi' = 'palevioletred4',
+                        'avg_xi_hat' = 'palevioletred3',
+                        'ci_bounds_xi' = 'palevioletred3')
+legend_labels_row3 <- c('avg_theta' = TeX('$\\theta(A^{(tr)})$'),
+                        'avg_xi' = TeX('$\\xi(A^{(tr)})$'),
+                        'avg_xi_hat' = TeX('$\\hat{\\xi}(A^{(tr)})$'),
+                        'ci_bounds_xi' = TeX('90% CI for $\\xi(A^{(tr)})$'))
+legend_values_linetype_row3 <- c('avg_theta' = 'solid',
+                                 'avg_xi' = 'solid',
+                                 'avg_xi_hat' = 'solid',
+                                 'ci_bounds_xi' = 'dashed')
+unified_plot_levels_row3 <- c('avg_theta', 'avg_xi', 'avg_xi_hat', 'ci_bounds_xi')
+shared_color_scale_row3 <- scale_color_manual(values = legend_values_row3,
+                                              labels = legend_labels_row3,
+                                              breaks = unified_plot_levels_row3)
+shared_linetype_scale_row3 <- scale_linetype_manual(values = legend_values_linetype_row3,
+                                                    labels = legend_labels_row3,
+                                                    breaks = unified_plot_levels_row3)
 
 # Averages of all relevant variables
 sim1_avg_theta <- apply(sim1_poisson_theta_record, 1, mean)
 sim1_avg_theta_hat <- apply(sim1_poisson_theta_hat_record, 1, mean)
 sim1_avg_theta_lower <- apply(sim1_poisson_theta_ci_lower_record, 1, mean)
 sim1_avg_theta_upper <- apply(sim1_poisson_theta_ci_upper_record, 1, mean)
+sim1_avg_varphi <- apply(sim1_poisson_varphi_record, 1, mean)
+sim1_avg_varphi_hat <- apply(sim1_poisson_varphi_hat_record, 1, mean)
+sim1_avg_varphi_lower <- apply(sim1_poisson_varphi_lower_record, 1, mean)
+sim1_avg_varphi_upper <- apply(sim1_poisson_varphi_upper_record, 1, mean)
 
 sim2_avg_varphi <- apply(sim2_varphi_record, 1, mean)
 sim2_avg_varphi_hat <- apply(sim2_varphi_hat_record, 1, mean)
@@ -547,46 +648,49 @@ sim6_avg_xi_lower <- apply(sim6_xi_ci_lower_record, 1, mean)
 sim6_avg_xi_upper <- apply(sim6_xi_ci_upper_record, 1, mean)
 sim6_avg_theta <- apply(sim6_theta_record, 1, mean)
 
-# Silly dud variables so that we can share a legend
-# plot_df_dud <- data.frame(eps_gamma = rep(0, 6),
-#                           name = c('avg_theta', 'avg_theta_hat',
-#                                    'avg_varphi', 'avg_varphi_hat',
-#                                    'avg_xi', 'avg_xi_hat'),
-#                           value = rep(0, 6))
-
 # ------------
 # -- Plot 1 --
 # ------------
 # Poisson var phi
 plot_df <- data.frame(eps_gamma = 1 - epsilon_check,
                       avg_theta = sim1_avg_theta,
-                      avg_theta_hat = sim1_avg_theta_hat) %>%
-  pivot_longer(c('avg_theta', 'avg_theta_hat')) %>%
-  complete(name = unified_plot_levels)
+                      avg_theta_hat = sim1_avg_theta_hat,
+                      avg_varphi = sim1_avg_varphi,
+                      avg_varphi_hat = sim1_avg_varphi_hat) %>%
+  pivot_longer(c('avg_theta', 'avg_theta_hat', 'avg_varphi', 'avg_varphi_hat')) %>%
+  complete(name = unified_plot_levels_row1)
+
 plot_df_ci_lower <- data.frame(eps_gamma = 1 - epsilon_check,
-                               ci_bounds = sim1_avg_theta_lower) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_theta = sim1_avg_theta_lower) %>%
+  pivot_longer(c('ci_bounds_theta')) %>%
+  complete(name = unified_plot_levels_row1)
 plot_df_ci_upper <- data.frame(eps_gamma = 1 - epsilon_check,
-                               ci_bounds = sim1_avg_theta_upper) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_theta = sim1_avg_theta_upper) %>%
+  pivot_longer(c('ci_bounds_theta')) %>%
+  complete(name = unified_plot_levels_row1)
+plot_df_ci_varphi_lower <- data.frame(eps_gamma = 1 - epsilon_check,
+                               ci_bounds_varphi = sim1_avg_varphi_lower) %>%
+  pivot_longer(c('ci_bounds_theta')) %>%
+  complete(name = unified_plot_levels_row1)
+plot_df_ci_varphi_upper <- data.frame(eps_gamma = 1 - epsilon_check,
+                               ci_bounds_varphi = sim1_avg_varphi_upper) %>%
+  pivot_longer(c('ci_bounds_theta')) %>%
+  complete(name = unified_plot_levels_row1)
 
 # Give consistent factor levels to each of the plot_dfs
-plot_df$name <- factor(plot_df$name, levels = unified_plot_levels)
-plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
-plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
+plot_df$name <- factor(plot_df$name, levels = unified_plot_levels_row1)
+plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row1)
+plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row1)
 
 plot1 <- ggplot() +
-  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
+  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
   # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name)) +
   # geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
-  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
-  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
+  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
+  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
   # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
   xlab(TeX('$1 - \\epsilon$')) + ylab('') +
   labs(color = 'Legend') +
-  shared_color_scale +
   theme(aspect.ratio = 1,
         axis.text.x = element_text(size = axis.text.x.size),
         axis.text.y = element_text(size = axis.text.y.size),
@@ -594,7 +698,22 @@ plot1 <- ggplot() +
         axis.title.y = element_text(size = axis.title.y.size),
         legend.title = element_text(size = legend.title.size),
         legend.text = element_text(size = legend.text.size))
-plot1
+
+# Add labels
+plot1_row_form <- plot1 + shared_color_scale_row1 + shared_linetype_scale_row1 +
+  guides(color = guide_legend(override.aes = list(
+    linetype = c('solid', 'solid', 'solid', 'solid', 'dashed', 'dashed'),
+    linewidth = c(legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thin, legend.linewidth.thin)
+  )),
+  linetype = 'none')
+# plot1 <- plot1 + shared_color_scale + shared_linetype_scale +
+#   guides(color = guide_legend(override.aes = list(
+#     linetype = c('solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'dashed', 'dashed', 'dashed'),
+#     linewidth = 0.6
+#   )),
+#   linetype = 'none')
+
+plot1_row_form
 
 # ------------
 # -- Plot 2 --
@@ -605,31 +724,30 @@ plot_df <- data.frame(eps_gamma = gamma_check,
                       avg_varphi_hat = sim2_avg_varphi_hat,
                       avg_theta = sim2_avg_theta) %>%
   pivot_longer(c('avg_varphi', 'avg_varphi_hat', 'avg_theta')) %>%
-  complete(name = unified_plot_levels)
+  complete(name = unified_plot_levels_row1)
 plot_df_ci_lower <- data.frame(eps_gamma = gamma_check,
-                               ci_bounds = sim2_avg_varphi_lower) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_varphi = sim2_avg_varphi_lower) %>%
+  pivot_longer(c('ci_bounds_varphi')) %>%
+  complete(name = unified_plot_levels_row1)
 plot_df_ci_upper <- data.frame(eps_gamma = gamma_check,
-                               ci_bounds = sim2_avg_varphi_upper) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_varphi = sim2_avg_varphi_upper) %>%
+  pivot_longer(c('ci_bounds_varphi')) %>%
+  complete(name = unified_plot_levels_row1)
 
 # Give consistent factor levels to each of the plot_dfs
-plot_df$name <- factor(plot_df$name, levels = unified_plot_levels)
-plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
-plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
+plot_df$name <- factor(plot_df$name, levels = unified_plot_levels_row1)
+plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row1)
+plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row1)
 
 plot2 <- ggplot() +
-  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
+  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
   # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name)) +
   # geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
-  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
-  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
+  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
+  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
   # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
   xlab(TeX('$\\gamma$')) + ylab('') +
   labs(color = 'Legend') +
-  shared_color_scale +
   theme(aspect.ratio = 1,
         axis.text.x = element_text(size = axis.text.x.size),
         axis.text.y = element_text(size = axis.text.y.size),
@@ -637,7 +755,22 @@ plot2 <- ggplot() +
         axis.title.y = element_text(size = axis.title.y.size),
         legend.title = element_text(size = legend.title.size),
         legend.text = element_text(size = legend.text.size))
-plot2
+
+# Add labels
+plot2_row_form <- plot2 + shared_color_scale_row1 + shared_linetype_scale_row1 +
+  guides(color = guide_legend(override.aes = list(
+    linetype = c('solid', 'solid', 'solid', 'solid', 'dashed', 'dashed'),
+    linewidth = c(legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thin, legend.linewidth.thin)
+  )),
+  linetype = 'none')
+# plot2 <- plot2 + shared_color_scale + shared_linetype_scale +
+#   guides(color = guide_legend(override.aes = list(
+#     linetype = c('solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'dashed', 'dashed', 'dashed'),
+#     linewidth = 0.6
+#   )),
+#   linetype = 'none')
+
+plot2_row_form
 
 # ------------
 # -- Plot 3 --
@@ -648,31 +781,28 @@ plot_df <- data.frame(eps_gamma = gamma_check,
                       avg_xi_hat = sim3_avg_xi_hat,
                       avg_theta = sim3_avg_theta) %>%
   pivot_longer(c('avg_xi', 'avg_xi_hat', 'avg_theta')) %>%
-  complete(name = unified_plot_levels)
+  complete(name = unified_plot_levels_row2)
 plot_df_ci_lower <- data.frame(eps_gamma = gamma_check,
-                               ci_bounds = sim3_avg_xi_lower) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_xi = sim3_avg_xi_lower) %>%
+  pivot_longer(c('ci_bounds_xi')) %>%
+  complete(name = unified_plot_levels_row2)
 plot_df_ci_upper <- data.frame(eps_gamma = gamma_check,
-                               ci_bounds = sim3_avg_xi_upper) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_xi = sim3_avg_xi_upper) %>%
+  pivot_longer(c('ci_bounds_xi')) %>%
+  complete(name = unified_plot_levels_row2)
 
 # Give consistent factor levels to each of the plot_dfs
-plot_df$name <- factor(plot_df$name, levels = unified_plot_levels)
-plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
-plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
+plot_df$name <- factor(plot_df$name, levels = unified_plot_levels_row2)
+plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row2)
+plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row2)
 
 plot3 <- ggplot() +
-  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
-  # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name)) +
-  # geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
-  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
-  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
+  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
+  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
+  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
   # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
   xlab(TeX('$\\gamma$')) + ylab('') +
   labs(color = 'Legend') +
-  shared_color_scale +
   theme(aspect.ratio = 1,
         axis.text.x = element_text(size = axis.text.x.size),
         axis.text.y = element_text(size = axis.text.y.size),
@@ -680,7 +810,22 @@ plot3 <- ggplot() +
         axis.title.y = element_text(size = axis.title.y.size),
         legend.title = element_text(size = legend.title.size),
         legend.text = element_text(size = legend.text.size))
-plot3
+
+# Add labels
+plot3_row_form <- plot3 + shared_color_scale_row2 + shared_linetype_scale_row2 +
+  guides(color = guide_legend(override.aes = list(
+    linetype = c('solid', 'solid', 'solid', 'dashed'),
+    linewidth = c(legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thin)
+  )),
+  linetype = 'none')
+# plot3 <- plot3 + shared_color_scale + shared_linetype_scale +
+#   guides(color = guide_legend(override.aes = list(
+#     linetype = c('solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'dashed', 'dashed', 'dashed'),
+#     linewidth = 0.6
+#   )),
+#   linetype = 'none')
+
+plot3_row_form
 
 # ------------
 # -- Plot 4 --
@@ -691,31 +836,30 @@ plot_df <- data.frame(eps_gamma = gamma_check,
                       avg_xi_hat = sim4_avg_xi_hat,
                       avg_theta = sim4_avg_theta) %>%
   pivot_longer(c('avg_xi', 'avg_xi_hat', 'avg_theta')) %>%
-  complete(name = unified_plot_levels)
+  complete(name = unified_plot_levels_row2)
 plot_df_ci_lower <- data.frame(eps_gamma = gamma_check,
-                               ci_bounds = sim4_avg_xi_lower) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_xi = sim4_avg_xi_lower) %>%
+  pivot_longer(c('ci_bounds_xi')) %>%
+  complete(name = unified_plot_levels_row2)
 plot_df_ci_upper <- data.frame(eps_gamma = gamma_check,
-                               ci_bounds = sim4_avg_xi_upper) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_xi = sim4_avg_xi_upper) %>%
+  pivot_longer(c('ci_bounds_xi')) %>%
+  complete(name = unified_plot_levels_row2)
 
 # Give consistent factor levels to each of the plot_dfs
-plot_df$name <- factor(plot_df$name, levels = unified_plot_levels)
-plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
-plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
+plot_df$name <- factor(plot_df$name, levels = unified_plot_levels_row2)
+plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row2)
+plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row2)
 
 plot4 <- ggplot() +
-  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
+  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
   # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name)) +
   # geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
-  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
-  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
+  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
+  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
   # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
   xlab(TeX('$\\gamma$')) + ylab('') +
   labs(color = 'Legend') +
-  shared_color_scale +
   theme(aspect.ratio = 1,
         axis.text.x = element_text(size = axis.text.x.size),
         axis.text.y = element_text(size = axis.text.y.size),
@@ -723,7 +867,22 @@ plot4 <- ggplot() +
         axis.title.y = element_text(size = axis.title.y.size),
         legend.title = element_text(size = legend.title.size),
         legend.text = element_text(size = legend.text.size))
-plot4
+
+# Add labels
+plot4_row_form <- plot4 + shared_color_scale_row2 + shared_linetype_scale_row2 +
+  guides(color = guide_legend(override.aes = list(
+    linetype = c('solid', 'solid', 'solid', 'dashed'),
+    linewidth = c(legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thin)
+  )),
+  linetype = 'none')
+# plot4 <- plot4 + shared_color_scale + shared_linetype_scale +
+#   guides(color = guide_legend(override.aes = list(
+#     linetype = c('solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'dashed', 'dashed', 'dashed'),
+#     linewidth = 0.6
+#   )),
+#   linetype = 'none')
+
+plot4_row_form
 
 # ------------
 # -- Plot 5 --
@@ -734,31 +893,30 @@ plot_df <- data.frame(eps_gamma = gamma_check,
                       avg_xi_hat = sim5_avg_xi_hat,
                       avg_theta = sim5_avg_theta) %>%
   pivot_longer(c('avg_xi', 'avg_xi_hat', 'avg_theta')) %>%
-  complete(name = unified_plot_levels)
+  complete(name = unified_plot_levels_row3)
 plot_df_ci_lower <- data.frame(eps_gamma = gamma_check,
-                               ci_bounds = sim5_avg_xi_lower) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_xi = sim5_avg_xi_lower) %>%
+  pivot_longer(c('ci_bounds_xi')) %>%
+  complete(name = unified_plot_levels_row3)
 plot_df_ci_upper <- data.frame(eps_gamma = gamma_check,
-                               ci_bounds = sim5_avg_xi_upper) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_xi = sim5_avg_xi_upper) %>%
+  pivot_longer(c('ci_bounds_xi')) %>%
+  complete(name = unified_plot_levels_row3)
 
 # Give consistent factor levels to each of the plot_dfs
-plot_df$name <- factor(plot_df$name, levels = unified_plot_levels)
-plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
-plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
+plot_df$name <- factor(plot_df$name, levels = unified_plot_levels_row3)
+plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row3)
+plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row3)
 
 plot5 <- ggplot() +
-  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
+  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
   # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name)) +
   # geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
-  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
-  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
+  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
+  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
   # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
   xlab(TeX('$\\gamma$')) + ylab('') +
   labs(color = 'Legend') +
-  shared_color_scale +
   theme(aspect.ratio = 1,
         axis.text.x = element_text(size = axis.text.x.size),
         axis.text.y = element_text(size = axis.text.y.size),
@@ -766,7 +924,22 @@ plot5 <- ggplot() +
         axis.title.y = element_text(size = axis.title.y.size),
         legend.title = element_text(size = legend.title.size),
         legend.text = element_text(size = legend.text.size))
-plot5
+
+# Add labels
+plot5_row_form <- plot5 + shared_color_scale_row3 + shared_linetype_scale_row3 +
+  guides(color = guide_legend(override.aes = list(
+    linetype = c('solid', 'solid', 'solid', 'dashed'),
+    linewidth = c(legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thin)
+  )),
+  linetype = 'none')
+# plot5 <- plot5 + shared_color_scale + shared_linetype_scale +
+#   guides(color = guide_legend(override.aes = list(
+#     linetype = c('solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'dashed', 'dashed', 'dashed'),
+#     linewidth = 0.6
+#   )),
+#   linetype = 'none')
+
+plot5_row_form
 
 # ------------
 # -- Plot 6 --
@@ -777,31 +950,30 @@ plot_df <- data.frame(eps_gamma = gamma_check,
                       avg_xi_hat = sim6_avg_xi_hat,
                       avg_theta = sim6_avg_theta) %>%
   pivot_longer(c('avg_xi', 'avg_xi_hat', 'avg_theta')) %>%
-  complete(name = unified_plot_levels)
+  complete(name = unified_plot_levels_row3)
 plot_df_ci_lower <- data.frame(eps_gamma = gamma_check,
-                               ci_bounds = sim6_avg_xi_lower) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_xi = sim6_avg_xi_lower) %>%
+  pivot_longer(c('ci_bounds_xi')) %>%
+  complete(name = unified_plot_levels_row3)
 plot_df_ci_upper <- data.frame(eps_gamma = gamma_check,
-                               ci_bounds = sim6_avg_xi_upper) %>%
-  pivot_longer(c('ci_bounds')) %>%
-  complete(name = unified_plot_levels)
+                               ci_bounds_xi = sim6_avg_xi_upper) %>%
+  pivot_longer(c('ci_bounds_xi')) %>%
+  complete(name = unified_plot_levels_row3)
 
 # Give consistent factor levels to each of the plot_dfs
 plot_df$name <- factor(plot_df$name, levels = unified_plot_levels)
-plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
-plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels)
+plot_df_ci_lower$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row3)
+plot_df_ci_upper$name <- factor(plot_df_ci_lower$name, levels = unified_plot_levels_row3)
 
 plot6 <- ggplot() +
-  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
+  geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thick_linewidth, alpha = line_alpha) +
   # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name)) +
   # geom_line(data = plot_df, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
-  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
-  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name), na.rm = TRUE, linewidth = thin_linewidth, linetype = 'dashed', alpha = 0.9) +
+  geom_line(data = plot_df_ci_lower, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
+  geom_line(data = plot_df_ci_upper, aes(x = eps_gamma, y = value, color = name, linetype = name), na.rm = TRUE, linewidth = thin_linewidth, alpha = 0.9) +
   # geom_line(data = plot_df_dud, aes(x = eps_gamma, y = value, color = name), linewidth = 0.8, alpha = 0.9) +
   xlab(TeX('$\\gamma$')) + ylab('') +
   labs(color = 'Legend') +
-  shared_color_scale +
   theme(aspect.ratio = 1,
         axis.text.x = element_text(size = axis.text.x.size),
         axis.text.y = element_text(size = axis.text.y.size),
@@ -809,11 +981,30 @@ plot6 <- ggplot() +
         axis.title.y = element_text(size = axis.title.y.size),
         legend.title = element_text(size = legend.title.size),
         legend.text = element_text(size = legend.text.size))
-plot6
+
+# Add labels
+plot6_row_form <- plot6 + shared_color_scale_row3 + shared_linetype_scale_row3 +
+  guides(color = guide_legend(override.aes = list(
+    linetype = c('solid', 'solid', 'solid', 'dashed'),
+    linewidth = c(legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thin)
+  )),
+  linetype = 'none')
+# plot6 <- plot6 + shared_color_scale + shared_linetype_scale +
+#   guides(color = guide_legend(override.aes = list(
+#     linetype = c('solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'dashed', 'dashed', 'dashed'),
+#     linewidth = 0.6
+#   )),
+#   linetype = 'none')
+
+plot6_row_form
 
 # ===================================
 # == Combine plots into one figure ==
 # ===================================
+
+# ----------------------------------------
+# - Put all six plots onto a single grid -
+# ----------------------------------------
 
 final_plot <- (plot1 + plot2 + plot3 + plot4 + plot5 + plot6) +
   plot_layout(ncol = 2, guides = "collect")
@@ -822,5 +1013,33 @@ final_plot
 width <- 20
 ggsave('figures/bernoulli_demonstration.pdf', plot = final_plot,
        device = 'pdf', width = width,
+       units = 'cm')
+
+# ----------------------------------
+# - Create three rows of two plots -
+# ----------------------------------
+plot_row1 <- (plot1_row_form + plot2_row_form) +
+  plot_layout(ncol = 2, guides = "collect")
+plot_row1
+
+plot_row2 <- (plot3_row_form + plot4_row_form) +
+  plot_layout(ncol = 2, guides = "collect")
+plot_row2
+
+plot_row3 <- (plot5_row_form + plot6_row_form) +
+  plot_layout(ncol = 2, guides = "collect")
+plot_row3
+
+width <- 20
+height <- width * (3.75 / 10)
+
+ggsave('figures/bernoulli_demonstration_row1.pdf', plot = plot_row1,
+       device = 'pdf', width = width, height = height,
+       units = 'cm')
+ggsave('figures/bernoulli_demonstration_row2.pdf', plot = plot_row2,
+       device = 'pdf', width = width, height = height,
+       units = 'cm')
+ggsave('figures/bernoulli_demonstration_row3.pdf', plot = plot_row3,
+       device = 'pdf', width = width, height = height,
        units = 'cm')
 

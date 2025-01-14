@@ -11,6 +11,8 @@ library('nett')
 library('mclust')
 library('latex2exp')
 
+ggplot2::theme_set(theme_minimal())
+
 # =========================
 # == Simulation settings ==
 # =========================
@@ -292,15 +294,74 @@ covered_naive
 # == Uncomment/comment the lines appropriately.     ==
 # ====================================================
 
-saveRDS(estimates_thinning, file = 'save_data/SIM1_GAUSSIAN_estimates_thinning.RDS')
-saveRDS(targets_thinning, file = 'save_data/SIM1_GAUSSIAN_targets_thinning.RDS')
-saveRDS(variances_thinning, file = 'save_data/SIM1_GAUSSIAN_variances_thinning.RDS')
-saveRDS(estimates_naive, file = 'save_data/SIM1_GAUSSIAN_estimates_naive.RDS')
-saveRDS(targets_naive, file = 'save_data/SIM1_GAUSSIAN_targets_naive.RDS')
-saveRDS(variances_naive, file = 'save_data/SIM1_GAUSSIAN_variances_naive.RDS')
-saveRDS(rand_results, file = 'save_data/SIM1_GAUSSIAN_rand_results.RDS')
-saveRDS(covered_thinning, file = 'save_data/SIM1_GAUSSIAN_covered_thinning.RDS')
-saveRDS(covered_naive, file = 'save_data/SIM1_GAUSSIAN_covered_naive.RDS')
+# -----------
+# - Table 1 -
+# -----------
+# saveRDS(estimates_thinning, file = 'save_data/SIM1_GAUSSIAN_estimates_thinning.RDS')
+# saveRDS(targets_thinning, file = 'save_data/SIM1_GAUSSIAN_targets_thinning.RDS')
+# saveRDS(variances_thinning, file = 'save_data/SIM1_GAUSSIAN_variances_thinning.RDS')
+# saveRDS(estimates_naive, file = 'save_data/SIM1_GAUSSIAN_estimates_naive.RDS')
+# saveRDS(targets_naive, file = 'save_data/SIM1_GAUSSIAN_targets_naive.RDS')
+# saveRDS(variances_naive, file = 'save_data/SIM1_GAUSSIAN_variances_naive.RDS')
+# saveRDS(rand_results, file = 'save_data/SIM1_GAUSSIAN_rand_results.RDS')
+# saveRDS(covered_thinning, file = 'save_data/SIM1_GAUSSIAN_covered_thinning.RDS')
+# saveRDS(covered_naive, file = 'save_data/SIM1_GAUSSIAN_covered_naive.RDS')
+#
+# estimates_thinning <- readRDS('save_data/SIM1_GAUSSIAN_estimates_thinning.RDS')
+# targets_thinning <- readRDS('save_data/SIM1_GAUSSIAN_targets_thinning.RDS')
+# variances_thinning <- readRDS('save_data/SIM1_GAUSSIAN_variances_thinning.RDS')
+# estimates_naive <- readRDS('save_data/SIM1_GAUSSIAN_estimates_naive.RDS')
+# targets_naive <- readRDS('save_data/SIM1_GAUSSIAN_targets_naive.RDS')
+# variances_naive <- readRDS('save_data/SIM1_GAUSSIAN_variances_naive.RDS')
+# rand_results <- readRDS('save_data/SIM1_GAUSSIAN_rand_results.RDS')
+# covered_thinning <- readRDS('save_data/SIM1_GAUSSIAN_covered_thinning.RDS')
+# covered_naive <- readRDS('save_data/SIM1_GAUSSIAN_covered_naive.RDS')
+
+# ------------
+# - Figure 1 -
+# ------------
+# saveRDS(estimates_thinning, file = 'save_data/SIM2_GAUSSIAN_estimates_thinning.RDS')
+# saveRDS(targets_thinning, file = 'save_data/SIM2_GAUSSIAN_targets_thinning.RDS')
+# saveRDS(variances_thinning, file = 'save_data/SIM2_GAUSSIAN_variances_thinning.RDS')
+# saveRDS(estimates_naive, file = 'save_data/SIM2_GAUSSIAN_estimates_naive.RDS')
+# saveRDS(targets_naive, file = 'save_data/SIM2_GAUSSIAN_targets_naive.RDS')
+# saveRDS(variances_naive, file = 'save_data/SIM2_GAUSSIAN_variances_naive.RDS')
+# saveRDS(rand_results, file = 'save_data/SIM2_GAUSSIAN_rand_results.RDS')
+# saveRDS(covered_thinning, file = 'save_data/SIM2_GAUSSIAN_covered_thinning.RDS')
+# saveRDS(covered_naive, file = 'save_data/SIM2_GAUSSIAN_covered_naive.RDS')
+
+estimates_thinning <- readRDS('save_data/SIM2_GAUSSIAN_estimates_thinning.RDS')
+targets_thinning <- readRDS('save_data/SIM2_GAUSSIAN_targets_thinning.RDS')
+variances_thinning <- readRDS('save_data/SIM2_GAUSSIAN_variances_thinning.RDS')
+estimates_naive <- readRDS('save_data/SIM2_GAUSSIAN_estimates_naive.RDS')
+targets_naive <- readRDS('save_data/SIM2_GAUSSIAN_targets_naive.RDS')
+variances_naive <- readRDS('save_data/SIM2_GAUSSIAN_variances_naive.RDS')
+rand_results <- readRDS('save_data/SIM2_GAUSSIAN_rand_results.RDS')
+covered_thinning <- readRDS('save_data/SIM2_GAUSSIAN_covered_thinning.RDS')
+covered_naive <- readRDS('save_data/SIM2_GAUSSIAN_covered_naive.RDS')
+
+# ------------
+# - Figure 2 -
+# ------------
+# saveRDS(estimates_thinning, file = 'save_data/SIM3_GAUSSIAN_estimates_thinning.RDS')
+# saveRDS(targets_thinning, file = 'save_data/SIM3_GAUSSIAN_targets_thinning.RDS')
+# saveRDS(variances_thinning, file = 'save_data/SIM3_GAUSSIAN_variances_thinning.RDS')
+# saveRDS(estimates_naive, file = 'save_data/SIM3_GAUSSIAN_estimates_naive.RDS')
+# saveRDS(targets_naive, file = 'save_data/SIM3_GAUSSIAN_targets_naive.RDS')
+# saveRDS(variances_naive, file = 'save_data/SIM3_GAUSSIAN_variances_naive.RDS')
+# saveRDS(rand_results, file = 'save_data/SIM3_GAUSSIAN_rand_results.RDS')
+# saveRDS(covered_thinning, file = 'save_data/SIM3_GAUSSIAN_covered_thinning.RDS')
+# saveRDS(covered_naive, file = 'save_data/SIM3_GAUSSIAN_covered_naive.RDS')
+
+estimates_thinning <- readRDS('save_data/SIM3_GAUSSIAN_estimates_thinning.RDS')
+targets_thinning <- readRDS('save_data/SIM3_GAUSSIAN_targets_thinning.RDS')
+variances_thinning <- readRDS('save_data/SIM3_GAUSSIAN_variances_thinning.RDS')
+estimates_naive <- readRDS('save_data/SIM3_GAUSSIAN_estimates_naive.RDS')
+targets_naive <- readRDS('save_data/SIM3_GAUSSIAN_targets_naive.RDS')
+variances_naive <- readRDS('save_data/SIM3_GAUSSIAN_variances_naive.RDS')
+rand_results <- readRDS('save_data/SIM3_GAUSSIAN_rand_results.RDS')
+covered_thinning <- readRDS('save_data/SIM3_GAUSSIAN_covered_thinning.RDS')
+covered_naive <- readRDS('save_data/SIM3_GAUSSIAN_covered_naive.RDS')
 
 # ==================================
 # == Plotting and viewing results ==
@@ -340,7 +401,7 @@ plot_table_1 <- function(data) {
 cat('Naive\n')
 plot_table_1(covered_naive)
 
-cat('Thinning\n')
+cat('Proposed\n')
 plot_table_1(covered_thinning)
 
 # Figure 1 - Showing a comparison of nominal vs empirical coverage
@@ -403,15 +464,15 @@ for (K_index in 1:length(K_check)) {
   for (eps_index in 1:length(eps_check)) {
 
     # Create a method name for thinning / naive that includes K = ---
-    # thinning_method_name <- paste0('Thinning (K = ', K_check[K_index], ')')
+    # thinning_method_name <- paste0('Proposed (K = ', K_check[K_index], ')')
     # naive_method_name <- paste0('Naive (K = ', K_check[K_index], ')')
 
-    # Thinning
+    # Proposed
     plot_df <- rbind(plot_df,
                      data.frame(index = 1:n_coverages,
                                 nominal_coverage = checked_coverages,
                                 coverage = figure1_coverage_thinning[K_index, eps_index, ],
-                                method = rep('Thinning', n_coverages),
+                                method = rep('Proposed', n_coverages),
                                 # method_print = rep(thinning_method_name, n_coverages),
                                 K = rep(K_check[K_index], n_coverages),
                                 Kch = as.character(rep(K_check[K_index], n_coverages)),
@@ -437,20 +498,20 @@ for (K_index in 1:length(K_check)) {
   K <- K_check[K_index]
 
   # Subset data
-  df_subset_thin <- plot_df %>% filter(method == 'Thinning', K == K)
+  df_subset_thin <- plot_df %>% filter(method == 'Proposed', K == K)
   df_subset_naive <- plot_df %>% filter(method == 'Naive', K == K)
 
   # Add it onto the plot
   figure1 <- figure1 +
-    geom_line(aes(x = nominal_coverage, y = coverage, color = Kch, linetype = 'Thinning'), size = 0.9, data = df_subset_thin)
+    geom_line(aes(x = nominal_coverage, y = coverage, color = Kch, linetype = 'Proposed'), linewidth = 0.9, data = df_subset_thin)
   figure1 <- figure1 +
-    geom_line(aes(x = nominal_coverage, y = coverage, color = Kch, linetype = 'Naive'), size = 0.7, data = df_subset_naive)
+    geom_line(aes(x = nominal_coverage, y = coverage, color = Kch, linetype = 'Naive'), linewidth = 0.7, data = df_subset_naive)
 }
 figure1 <- figure1 +
   scale_color_manual(breaks = c('2', '5', '10'),
                      values = legend_colors) +
-  scale_linetype_manual(breaks = c('Thinning', 'Naive'),
-                        values = c('Thinning' = 'solid', 'Naive' =
+  scale_linetype_manual(breaks = c('Proposed', 'Naive'),
+                        values = c('Proposed' = 'solid', 'Naive' =
                                      'dashed')) +
   xlab('Nominal Coverage') + ylab('Empirical Coverage') +
   coord_fixed() +
@@ -463,7 +524,7 @@ figure1 <- figure1 +
         legend.text = element_text(size = 16))
 
 figure1
-ggsave('final_simulations/figures/nominal_empirical_coverage_gaussian.pdf',
+ggsave('figures/nominal_empirical_coverage_gaussian.pdf',
        plot = figure1, device = 'pdf', width = 4.5, height = 3.5)
 
 
@@ -518,7 +579,7 @@ figure2a <- figure2a +
         legend.title = element_text(size = 18),
         legend.text = element_text(size = 15))
 figure2a
-ggsave('final_simulations/figures/conf_width_epsilon_gaussian.pdf',
+ggsave('figures/conf_width_epsilon_gaussian.pdf',
        plot = figure2a, device = 'pdf', width = 4.5, height = 3.5)
 
 # Figure 2b - Tradeoff of signal regime, RAND index for clustering, separated by epsilon
@@ -555,5 +616,5 @@ figure2b <- ggplot(plot_df) +
         legend.title = element_text(size = 18),
         legend.text = element_text(size = 15))
 figure2b
-ggsave('final_simulations/figures/randindex_epsilon_gaussian.pdf',
+ggsave('figures/randindex_epsilon_gaussian.pdf',
        plot = figure2b, device = 'pdf', width = 4.5, height = 3.5)
