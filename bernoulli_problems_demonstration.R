@@ -490,10 +490,16 @@ apply(sim6_xi_coverage, 1, mean)
 
 axis.text.x.size <- 13
 axis.text.y.size <- 13
+
+axis.text.x.size.small <- 11
+axis.text.y.size.small <- 11
+
 axis.title.x.size <- 21
 axis.title.y.size <- 21
+
 legend.title.size <- 18
 legend.text.size <- 14.5
+legend.text.size.small <- 14
 
 legend.linewidth.thick <- 0.9
 legend.linewidth.thin <- 0.7
@@ -555,10 +561,10 @@ legend_values_linetype_row1 <- c('avg_theta' = 'solid',
                                  'ci_bounds_theta' = 'dashed',
                                  'ci_bounds_varphi' = 'dashed')
 legend_labels_row1 <- c('avg_theta' = TeX('$\\theta(A^{(tr)})$'),
-                        'avg_theta_hat' = TeX('$\\hat{\\theta}(A^{(tr)})$ (left only)'),
+                        'avg_theta_hat' = TeX('$\\hat{\\theta}(A^{(tr)})$ (\\textit{left only})'),
                         'avg_varphi' = TeX('$\\varphi(A^{(tr)})$'),
                         'avg_varphi_hat' = TeX('$\\hat{\\varphi}(A^{(tr)})$'),
-                        'ci_bounds_theta' = TeX('90% CI for $\\theta(A^{(tr)})$ (left only)'),
+                        'ci_bounds_theta' = TeX('90% CI for $\\theta(A^{(tr)})$ (\\textit{left only})'),
                         'ci_bounds_varphi' = TeX('90% CI for $\\varphi(A^{(tr)})$'))
 unified_plot_levels_row1 <- c('avg_theta', 'avg_theta_hat', 'avg_varphi', 'avg_varphi_hat', 'ci_bounds_theta', 'ci_bounds_varphi')
 shared_color_scale_row1 <- scale_color_manual(values = legend_values_row1,
@@ -615,8 +621,8 @@ sim1_avg_theta_lower <- apply(sim1_poisson_theta_ci_lower_record, 1, mean)
 sim1_avg_theta_upper <- apply(sim1_poisson_theta_ci_upper_record, 1, mean)
 sim1_avg_varphi <- apply(sim1_poisson_varphi_record, 1, mean)
 sim1_avg_varphi_hat <- apply(sim1_poisson_varphi_hat_record, 1, mean)
-sim1_avg_varphi_lower <- apply(sim1_poisson_varphi_lower_record, 1, mean)
-sim1_avg_varphi_upper <- apply(sim1_poisson_varphi_upper_record, 1, mean)
+sim1_avg_varphi_lower <- apply(sim1_poisson_varphi_ci_lower_record, 1, mean)
+sim1_avg_varphi_upper <- apply(sim1_poisson_varphi_ci_upper_record, 1, mean)
 
 sim2_avg_varphi <- apply(sim2_varphi_record, 1, mean)
 sim2_avg_varphi_hat <- apply(sim2_varphi_hat_record, 1, mean)
@@ -661,20 +667,14 @@ plot_df <- data.frame(eps_gamma = 1 - epsilon_check,
   complete(name = unified_plot_levels_row1)
 
 plot_df_ci_lower <- data.frame(eps_gamma = 1 - epsilon_check,
-                               ci_bounds_theta = sim1_avg_theta_lower) %>%
-  pivot_longer(c('ci_bounds_theta')) %>%
+                               ci_bounds_theta = sim1_avg_theta_lower,
+                               ci_bounds_varphi = sim1_avg_varphi_lower) %>%
+  pivot_longer(c('ci_bounds_theta', 'ci_bounds_varphi')) %>%
   complete(name = unified_plot_levels_row1)
 plot_df_ci_upper <- data.frame(eps_gamma = 1 - epsilon_check,
-                               ci_bounds_theta = sim1_avg_theta_upper) %>%
-  pivot_longer(c('ci_bounds_theta')) %>%
-  complete(name = unified_plot_levels_row1)
-plot_df_ci_varphi_lower <- data.frame(eps_gamma = 1 - epsilon_check,
-                               ci_bounds_varphi = sim1_avg_varphi_lower) %>%
-  pivot_longer(c('ci_bounds_theta')) %>%
-  complete(name = unified_plot_levels_row1)
-plot_df_ci_varphi_upper <- data.frame(eps_gamma = 1 - epsilon_check,
+                               ci_bounds_theta = sim1_avg_theta_upper,
                                ci_bounds_varphi = sim1_avg_varphi_upper) %>%
-  pivot_longer(c('ci_bounds_theta')) %>%
+  pivot_longer(c('ci_bounds_theta', 'ci_bounds_varphi')) %>%
   complete(name = unified_plot_levels_row1)
 
 # Give consistent factor levels to each of the plot_dfs
@@ -692,12 +692,12 @@ plot1 <- ggplot() +
   xlab(TeX('$1 - \\epsilon$')) + ylab('') +
   labs(color = 'Legend') +
   theme(aspect.ratio = 1,
-        axis.text.x = element_text(size = axis.text.x.size),
-        axis.text.y = element_text(size = axis.text.y.size),
+        axis.text.x = element_text(size = axis.text.x.size.small),
+        axis.text.y = element_text(size = axis.text.y.size.small),
         axis.title.x = element_text(size = axis.title.x.size),
         axis.title.y = element_text(size = axis.title.y.size),
         legend.title = element_text(size = legend.title.size),
-        legend.text = element_text(size = legend.text.size))
+        legend.text = element_text(size = legend.text.size.small))
 
 # Add labels
 plot1_row_form <- plot1 + shared_color_scale_row1 + shared_linetype_scale_row1 +
@@ -706,12 +706,6 @@ plot1_row_form <- plot1 + shared_color_scale_row1 + shared_linetype_scale_row1 +
     linewidth = c(legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thin, legend.linewidth.thin)
   )),
   linetype = 'none')
-# plot1 <- plot1 + shared_color_scale + shared_linetype_scale +
-#   guides(color = guide_legend(override.aes = list(
-#     linetype = c('solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'dashed', 'dashed', 'dashed'),
-#     linewidth = 0.6
-#   )),
-#   linetype = 'none')
 
 plot1_row_form
 
@@ -749,12 +743,12 @@ plot2 <- ggplot() +
   xlab(TeX('$\\gamma$')) + ylab('') +
   labs(color = 'Legend') +
   theme(aspect.ratio = 1,
-        axis.text.x = element_text(size = axis.text.x.size),
-        axis.text.y = element_text(size = axis.text.y.size),
+        axis.text.x = element_text(size = axis.text.x.size.small),
+        axis.text.y = element_text(size = axis.text.y.size.small),
         axis.title.x = element_text(size = axis.title.x.size),
         axis.title.y = element_text(size = axis.title.y.size),
         legend.title = element_text(size = legend.title.size),
-        legend.text = element_text(size = legend.text.size))
+        legend.text = element_text(size = legend.text.size.small))
 
 # Add labels
 plot2_row_form <- plot2 + shared_color_scale_row1 + shared_linetype_scale_row1 +
@@ -763,12 +757,6 @@ plot2_row_form <- plot2 + shared_color_scale_row1 + shared_linetype_scale_row1 +
     linewidth = c(legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thick, legend.linewidth.thin, legend.linewidth.thin)
   )),
   linetype = 'none')
-# plot2 <- plot2 + shared_color_scale + shared_linetype_scale +
-#   guides(color = guide_legend(override.aes = list(
-#     linetype = c('solid', 'solid', 'solid', 'solid', 'solid', 'solid', 'dashed', 'dashed', 'dashed'),
-#     linewidth = 0.6
-#   )),
-#   linetype = 'none')
 
 plot2_row_form
 

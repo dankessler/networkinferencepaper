@@ -453,17 +453,17 @@ theta_covered_naive
 # saveRDS(theta_covered_thinning, file = 'save_data/SIM1_BERNOULLI_theta_covered_thinning.RDS')
 # saveRDS(theta_covered_naive, file = 'save_data/SIM1_BERNOULLI_theta_covered_naive.RDS')
 
-# xi_est_thinning <- readRDS('save_data/SIM1_BERNOULLI_xi_est_thinning.RDS')
-# xi_target_thinning <- readRDS('save_data/SIM1_BERNOULLI_xi_target_thinning.RDS')
-# theta_target_thinning <- readRDS('save_data/SIM1_BERNOULLI_theta_target_thinning.RDS')
-# xi_variances_thinning <- readRDS('save_data/SIM1_BERNOULLI_xi_variances_thinning.RDS')
-# theta_est_naive <- readRDS('save_data/SIM1_BERNOULLI_theta_est_naive.RDS')
-# theta_target_naive <- readRDS('save_data/SIM1_BERNOULLI_theta_target_naive.RDS')
-# theta_variances_naive <- readRDS('save_data/SIM1_BERNOULLI_theta_variances_naive.RDS')
-# rand_results <- readRDS('save_data/SIM1_BERNOULLI_rand_results.RDS')
-# xi_covered_thinning <- readRDS('save_data/SIM1_BERNOULLI_xi_covered_thinning.RDS')
-# theta_covered_thinning <- readRDS('save_data/SIM1_BERNOULLI_theta_covered_thinning.RDS')
-# theta_covered_naive <- readRDS('save_data/SIM1_BERNOULLI_theta_covered_naive.RDS')
+xi_est_thinning <- readRDS('save_data/SIM1_BERNOULLI_xi_est_thinning.RDS')
+xi_target_thinning <- readRDS('save_data/SIM1_BERNOULLI_xi_target_thinning.RDS')
+theta_target_thinning <- readRDS('save_data/SIM1_BERNOULLI_theta_target_thinning.RDS')
+xi_variances_thinning <- readRDS('save_data/SIM1_BERNOULLI_xi_variances_thinning.RDS')
+theta_est_naive <- readRDS('save_data/SIM1_BERNOULLI_theta_est_naive.RDS')
+theta_target_naive <- readRDS('save_data/SIM1_BERNOULLI_theta_target_naive.RDS')
+theta_variances_naive <- readRDS('save_data/SIM1_BERNOULLI_theta_variances_naive.RDS')
+rand_results <- readRDS('save_data/SIM1_BERNOULLI_rand_results.RDS')
+xi_covered_thinning <- readRDS('save_data/SIM1_BERNOULLI_xi_covered_thinning.RDS')
+theta_covered_thinning <- readRDS('save_data/SIM1_BERNOULLI_theta_covered_thinning.RDS')
+theta_covered_naive <- readRDS('save_data/SIM1_BERNOULLI_theta_covered_naive.RDS')
 
 # ------------
 # - Figure 1 -
@@ -481,45 +481,45 @@ theta_covered_naive
 # saveRDS(theta_covered_thinning, file = 'save_data/SIM2_BERNOULLI_theta_covered_thinning.RDS')
 # saveRDS(theta_covered_naive, file = 'save_data/SIM2_BERNOULLI_theta_covered_naive.RDS')
 
-# xi_est_thinning <- readRDS('save_data/SIM2_BERNOULLI_xi_est_thinning.RDS')
-# xi_target_thinning <- readRDS('save_data/SIM2_BERNOULLI_xi_target_thinning.RDS')
-# theta_target_thinning <- readRDS('save_data/SIM2_BERNOULLI_theta_target_thinning.RDS')
-# xi_variances_thinning <- readRDS('save_data/SIM2_BERNOULLI_xi_variances_thinning.RDS')
-# theta_est_naive <- readRDS('save_data/SIM2_BERNOULLI_theta_est_naive.RDS')
-# theta_target_naive <- readRDS('save_data/SIM2_BERNOULLI_theta_target_naive.RDS')
-# theta_variances_naive <- readRDS('save_data/SIM2_BERNOULLI_theta_variances_naive.RDS')
-# rand_results <- readRDS('save_data/SIM2_BERNOULLI_rand_results.RDS')
-# xi_covered_thinning <- readRDS('save_data/SIM2_BERNOULLI_xi_covered_thinning.RDS')
-# theta_covered_thinning <- readRDS('save_data/SIM2_BERNOULLI_theta_covered_thinning.RDS')
-# theta_covered_naive <- readRDS('save_data/SIM2_BERNOULLI_theta_covered_naive.RDS')
+xi_est_thinning <- readRDS('save_data/SIM2_BERNOULLI_xi_est_thinning.RDS')
+xi_target_thinning <- readRDS('save_data/SIM2_BERNOULLI_xi_target_thinning.RDS')
+theta_target_thinning <- readRDS('save_data/SIM2_BERNOULLI_theta_target_thinning.RDS')
+xi_variances_thinning <- readRDS('save_data/SIM2_BERNOULLI_xi_variances_thinning.RDS')
+theta_est_naive <- readRDS('save_data/SIM2_BERNOULLI_theta_est_naive.RDS')
+theta_target_naive <- readRDS('save_data/SIM2_BERNOULLI_theta_target_naive.RDS')
+theta_variances_naive <- readRDS('save_data/SIM2_BERNOULLI_theta_variances_naive.RDS')
+rand_results <- readRDS('save_data/SIM2_BERNOULLI_rand_results.RDS')
+xi_covered_thinning <- readRDS('save_data/SIM2_BERNOULLI_xi_covered_thinning.RDS')
+theta_covered_thinning <- readRDS('save_data/SIM2_BERNOULLI_theta_covered_thinning.RDS')
+theta_covered_naive <- readRDS('save_data/SIM2_BERNOULLI_theta_covered_naive.RDS')
 
 # ------------
 # - Figure 2 -
 # ------------
 
-saveRDS(xi_est_thinning, file = 'save_data/SIM3_BERNOULLI_xi_est_thinning.RDS')
-saveRDS(xi_target_thinning, file = 'save_data/SIM3_BERNOULLI_xi_target_thinning.RDS')
-saveRDS(theta_target_thinning, file = 'save_data/SIM3_BERNOULLI_theta_target_thinning.RDS')
-saveRDS(xi_variances_thinning, file = 'save_data/SIM3_BERNOULLI_xi_variances_thinning.RDS')
-saveRDS(theta_est_naive, file = 'save_data/SIM3_BERNOULLI_theta_est_naive.RDS')
-saveRDS(theta_target_naive, file = 'save_data/SIM3_BERNOULLI_theta_target_naive.RDS')
-saveRDS(theta_variances_naive, file = 'save_data/SIM3_BERNOULLI_theta_variances_naive.RDS')
-saveRDS(rand_results, file = 'save_data/SIM3_BERNOULLI_rand_results.RDS')
-saveRDS(xi_covered_thinning, file = 'save_data/SIM3_BERNOULLI_xi_covered_thinning.RDS')
-saveRDS(theta_covered_thinning, file = 'save_data/SIM3_BERNOULLI_theta_covered_thinning.RDS')
-saveRDS(theta_covered_naive, file = 'save_data/SIM3_BERNOULLI_theta_covered_naive.RDS')
+# saveRDS(xi_est_thinning, file = 'save_data/SIM3_BERNOULLI_xi_est_thinning.RDS')
+# saveRDS(xi_target_thinning, file = 'save_data/SIM3_BERNOULLI_xi_target_thinning.RDS')
+# saveRDS(theta_target_thinning, file = 'save_data/SIM3_BERNOULLI_theta_target_thinning.RDS')
+# saveRDS(xi_variances_thinning, file = 'save_data/SIM3_BERNOULLI_xi_variances_thinning.RDS')
+# saveRDS(theta_est_naive, file = 'save_data/SIM3_BERNOULLI_theta_est_naive.RDS')
+# saveRDS(theta_target_naive, file = 'save_data/SIM3_BERNOULLI_theta_target_naive.RDS')
+# saveRDS(theta_variances_naive, file = 'save_data/SIM3_BERNOULLI_theta_variances_naive.RDS')
+# saveRDS(rand_results, file = 'save_data/SIM3_BERNOULLI_rand_results.RDS')
+# saveRDS(xi_covered_thinning, file = 'save_data/SIM3_BERNOULLI_xi_covered_thinning.RDS')
+# saveRDS(theta_covered_thinning, file = 'save_data/SIM3_BERNOULLI_theta_covered_thinning.RDS')
+# saveRDS(theta_covered_naive, file = 'save_data/SIM3_BERNOULLI_theta_covered_naive.RDS')
 
-# xi_est_thinning <- readRDS('save_data/SIM3_BERNOULLI_xi_est_thinning.RDS')
-# xi_target_thinning <- readRDS('save_data/SIM3_BERNOULLI_xi_target_thinning.RDS')
-# theta_target_thinning <- readRDS('save_data/SIM3_BERNOULLI_theta_target_thinning.RDS')
-# xi_variances_thinning <- readRDS('save_data/SIM3_BERNOULLI_xi_variances_thinning.RDS')
-# theta_est_naive <- readRDS('save_data/SIM3_BERNOULLI_theta_est_naive.RDS')
-# theta_target_naive <- readRDS('save_data/SIM3_BERNOULLI_theta_target_naive.RDS')
-# theta_variances_naive <- readRDS('save_data/SIM3_BERNOULLI_theta_variances_naive.RDS')
-# rand_results <- readRDS('save_data/SIM3_BERNOULLI_rand_results.RDS')
-# xi_covered_thinning <- readRDS('save_data/SIM3_BERNOULLI_xi_covered_thinning.RDS')
-# theta_covered_thinning <- readRDS('save_data/SIM3_BERNOULLI_theta_covered_thinning.RDS')
-# theta_covered_naive <- readRDS('save_data/SIM3_BERNOULLI_theta_covered_naive.RDS')
+xi_est_thinning <- readRDS('save_data/SIM3_BERNOULLI_xi_est_thinning.RDS')
+xi_target_thinning <- readRDS('save_data/SIM3_BERNOULLI_xi_target_thinning.RDS')
+theta_target_thinning <- readRDS('save_data/SIM3_BERNOULLI_theta_target_thinning.RDS')
+xi_variances_thinning <- readRDS('save_data/SIM3_BERNOULLI_xi_variances_thinning.RDS')
+theta_est_naive <- readRDS('save_data/SIM3_BERNOULLI_theta_est_naive.RDS')
+theta_target_naive <- readRDS('save_data/SIM3_BERNOULLI_theta_target_naive.RDS')
+theta_variances_naive <- readRDS('save_data/SIM3_BERNOULLI_theta_variances_naive.RDS')
+rand_results <- readRDS('save_data/SIM3_BERNOULLI_rand_results.RDS')
+xi_covered_thinning <- readRDS('save_data/SIM3_BERNOULLI_xi_covered_thinning.RDS')
+theta_covered_thinning <- readRDS('save_data/SIM3_BERNOULLI_theta_covered_thinning.RDS')
+theta_covered_naive <- readRDS('save_data/SIM3_BERNOULLI_theta_covered_naive.RDS')
 
 # ==================================
 # == Plotting and viewing results ==
@@ -590,8 +590,11 @@ for (K_index in 1:length(K_check)) {
       z_quantile <- qnorm(1 - (1 - coverage) / 2)
 
       # Extract relevant slices from the results array
-      targets_thinning_slice <- targets_thinning[n_index, K_true_index, K_index, signal_index, gamma_index, ]
+      targets_thinning_slice <- theta_target_thinning[n_index, K_true_index, K_index, signal_index, gamma_index, ]
       theta_target_naive_slice <- theta_target_naive[n_index, K_true_index, K_index, signal_index, gamma_index, ]
+
+      # NOTE: This is currently set to do coverage for theta(Atr) so that it's "comparable" to theta(A)
+      # in the naive approach.
 
       upper_bounds_thinning <-
         xi_est_thinning[n_index, K_true_index, K_index, signal_index, gamma_index, ] +
@@ -633,7 +636,7 @@ for (K_index in 1:length(K_check)) {
                      data.frame(index = 1:n_coverages,
                                 nominal_coverage = checked_coverages,
                                 coverage = figure1_coverage_thinning[K_index, gamma_index, ],
-                                method = rep('Fission', n_coverages),
+                                method = rep('Proposed', n_coverages),
                                 # method_print = rep(thinning_method_name, n_coverages),
                                 K = rep(K_check[K_index], n_coverages),
                                 Kch = as.character(rep(K_check[K_index], n_coverages)),
@@ -659,20 +662,20 @@ for (K_index in 1:length(K_check)) {
   K <- K_check[K_index]
 
   # Subset data
-  df_subset_thin <- plot_df %>% filter(method == 'Fission', K == K)
+  df_subset_thin <- plot_df %>% filter(method == 'Proposed', K == K)
   df_subset_naive <- plot_df %>% filter(method == 'Naive', K == K)
 
   # Add it onto the plot
   figure1 <- figure1 +
-    geom_line(aes(x = nominal_coverage, y = coverage, color = Kch, linetype = 'Fission'), size = 0.9, data = df_subset_thin)
+    geom_line(aes(x = nominal_coverage, y = coverage, color = Kch, linetype = 'Proposed'), size = 0.9, data = df_subset_thin)
   figure1 <- figure1 +
     geom_line(aes(x = nominal_coverage, y = coverage, color = Kch, linetype = 'Naive'), size = 0.7, data = df_subset_naive)
 }
 figure1 <- figure1 +
   scale_color_manual(breaks = c('2', '5', '10'),
                      values = legend_colors) +
-  scale_linetype_manual(breaks = c('Fission', 'Naive'),
-                        values = c('Fission' = 'solid', 'Naive' =
+  scale_linetype_manual(breaks = c('Proposed', 'Naive'),
+                        values = c('Proposed' = 'solid', 'Naive' =
                                      'dashed')) +
   xlab('Nominal Coverage') + ylab('Empirical Coverage') +
   coord_fixed() +
