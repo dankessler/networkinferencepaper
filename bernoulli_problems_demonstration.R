@@ -510,35 +510,35 @@ thin_linewidth = 0.9
 line_alpha <- 0.9
 
 # Creating a legend that is shared with all six plots
-legend_values <- c('avg_theta' = 'slateblue4',
-                   'avg_theta_hat' = 'slateblue2',
-                   'avg_varphi' = 'slateblue1',
+legend_values <- c('avg_varphi' = 'slateblue1',
                    'avg_varphi_hat' = 'slateblue4',
+                   'avg_theta' = 'slateblue4',
+                   'avg_theta_hat' = 'slateblue2',
                    'avg_xi' = 'palevioletred4',
                    'avg_xi_hat' = 'palevioletred3',
                    'ci_bounds_theta' = 'slateblue2',
                    'ci_bounds_varphi' = 'slateblue4',
                    'ci_bounds_xi' = 'palevioletred3')
-legend_values_linetype <- c('avg_theta' = 'solid',
-                            'avg_theta_hat' = 'solid',
-                            'avg_varphi' = 'solid',
+legend_values_linetype <- c('avg_varphi' = 'solid',
                             'avg_varphi_hat' = 'solid',
+                            'avg_theta' = 'solid',
+                            'avg_theta_hat' = 'solid',
                             'avg_xi' = 'solid',
                             'avg_xi_hat' = 'solid',
                             'ci_bounds_theta' = 'dashed',
                             'ci_bounds_varphi' = 'dashed',
                             'ci_bounds_xi' = 'dashed')
-legend_labels <- c('avg_theta' = TeX('$\\theta(A^{(tr)})$'),
-                   'avg_theta_hat' = TeX('$\\hat{\\theta}(A^{(tr)})$'),
-                   'avg_varphi' = TeX('$\\varphi(A^{(tr)})$'),
+legend_labels <- c('avg_varphi' = TeX('$\\varphi(A^{(tr)})$'),
                    'avg_varphi_hat' = TeX('$\\hat{\\varphi}(A^{(tr)})$'),
+                   'avg_theta' = TeX('$\\theta(A^{(tr)})$'),
+                   'avg_theta_hat' = TeX('$\\hat{\\theta}(A^{(tr)})$'),
                    'avg_xi' = TeX('$\\xi(A^{(tr)})$'),
                    'avg_xi_hat' = TeX('$\\hat{\\xi}(A^{(tr)})$'),
                    'ci_bounds_theta' = TeX('90% CI for $\\theta(A^{(tr)})$'),
                    'ci_bounds_varphi' = TeX('90% CI for $\\varphi(A^{(tr)})$'),
                    'ci_bounds_xi' = TeX('90% CI for $\\xi(A^{(tr)})$'))
 
-unified_plot_levels <- c('avg_theta', 'avg_theta_hat', 'avg_varphi', 'avg_varphi_hat', 'avg_xi', 'avg_xi_hat', 'ci_bounds_theta', 'ci_bounds_varphi', 'ci_bounds_xi')
+unified_plot_levels <- c('avg_varphi', 'avg_varphi_hat', 'avg_theta', 'avg_theta_hat', 'avg_xi', 'avg_xi_hat', 'ci_bounds_theta', 'ci_bounds_varphi', 'ci_bounds_xi')
 shared_color_scale <- scale_color_manual(values = legend_values,
                                          labels = legend_labels,
                                          breaks = unified_plot_levels)
@@ -548,25 +548,25 @@ shared_linetype_scale <- scale_linetype_manual(values = legend_values_linetype,
 
 # Creating a legend that separates into the three different rows and only
 # has the relevant variables
-legend_values_row1 <- c('avg_theta' = 'slateblue4',
-                        'avg_theta_hat' = 'slateblue2',
-                        'avg_varphi' = 'darkgreen',
+legend_values_row1 <- c('avg_varphi' = 'darkgreen',
                         'avg_varphi_hat' = 'darkseagreen3',
+                        'avg_theta' = 'slateblue4',
+                        'avg_theta_hat' = 'slateblue2',
                         'ci_bounds_theta' = 'slateblue2',
                         'ci_bounds_varphi' = 'darkseagreen3')
-legend_values_linetype_row1 <- c('avg_theta' = 'solid',
-                                 'avg_theta_hat' = 'solid',
-                                 'avg_varphi' = 'solid',
+legend_values_linetype_row1 <- c('avg_varphi' = 'solid',
                                  'avg_varphi_hat' = 'solid',
+                                 'avg_theta' = 'solid',
+                                 'avg_theta_hat' = 'solid',
                                  'ci_bounds_theta' = 'dashed',
                                  'ci_bounds_varphi' = 'dashed')
-legend_labels_row1 <- c('avg_theta' = TeX('$\\theta(A^{(tr)})$'),
+legend_labels_row1 <- c('avg_varphi' = TeX('$\\varphi(A^{(tr)})$'),
+                        'avg_varphi_hat' = TeX('$\\hat{\\varphi}(A^{(tr)})$ (\\textit{right only})'),
+                        'avg_theta' = TeX('$\\theta(A^{(tr)})$'),
                         'avg_theta_hat' = TeX('$\\hat{\\theta}(A^{(tr)})$ (\\textit{left only})'),
-                        'avg_varphi' = TeX('$\\varphi(A^{(tr)})$'),
-                        'avg_varphi_hat' = TeX('$\\hat{\\varphi}(A^{(tr)})$'),
                         'ci_bounds_theta' = TeX('90% CI for $\\theta(A^{(tr)})$ (\\textit{left only})'),
-                        'ci_bounds_varphi' = TeX('90% CI for $\\varphi(A^{(tr)})$'))
-unified_plot_levels_row1 <- c('avg_theta', 'avg_theta_hat', 'avg_varphi', 'avg_varphi_hat', 'ci_bounds_theta', 'ci_bounds_varphi')
+                        'ci_bounds_varphi' = TeX('90% CI for $\\varphi(A^{(tr)})$ (\\textit{right only})'))
+unified_plot_levels_row1 <- c('avg_varphi', 'avg_varphi_hat', 'avg_theta', 'avg_theta_hat', 'ci_bounds_theta', 'ci_bounds_varphi')
 shared_color_scale_row1 <- scale_color_manual(values = legend_values_row1,
                                               labels = legend_labels_row1,
                                               breaks = unified_plot_levels_row1)
@@ -661,20 +661,17 @@ sim6_avg_theta <- apply(sim6_theta_record, 1, mean)
 plot_df <- data.frame(eps_gamma = 1 - epsilon_check,
                       avg_theta = sim1_avg_theta,
                       avg_theta_hat = sim1_avg_theta_hat,
-                      avg_varphi = sim1_avg_varphi,
-                      avg_varphi_hat = sim1_avg_varphi_hat) %>%
-  pivot_longer(c('avg_theta', 'avg_theta_hat', 'avg_varphi', 'avg_varphi_hat')) %>%
+                      avg_varphi = sim1_avg_varphi) %>%
+  pivot_longer(c('avg_theta', 'avg_theta_hat', 'avg_varphi')) %>%
   complete(name = unified_plot_levels_row1)
 
 plot_df_ci_lower <- data.frame(eps_gamma = 1 - epsilon_check,
-                               ci_bounds_theta = sim1_avg_theta_lower,
-                               ci_bounds_varphi = sim1_avg_varphi_lower) %>%
-  pivot_longer(c('ci_bounds_theta', 'ci_bounds_varphi')) %>%
+                               ci_bounds_theta = sim1_avg_theta_lower) %>%
+  pivot_longer(c('ci_bounds_theta')) %>%
   complete(name = unified_plot_levels_row1)
 plot_df_ci_upper <- data.frame(eps_gamma = 1 - epsilon_check,
-                               ci_bounds_theta = sim1_avg_theta_upper,
-                               ci_bounds_varphi = sim1_avg_varphi_upper) %>%
-  pivot_longer(c('ci_bounds_theta', 'ci_bounds_varphi')) %>%
+                               ci_bounds_theta = sim1_avg_theta_upper) %>%
+  pivot_longer(c('ci_bounds_theta')) %>%
   complete(name = unified_plot_levels_row1)
 
 # Give consistent factor levels to each of the plot_dfs
