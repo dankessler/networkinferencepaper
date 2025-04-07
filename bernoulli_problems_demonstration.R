@@ -48,8 +48,8 @@ h0_inv_deriv <- function(x, gamma) {
 n <- 150                                          # Network nodes
 K <- 2                                            # Number of communities
 num_sim_per_gamma_epsilon <- 300                  # Repetitions of the simulation
-num_epsilon_gamma_check <- 20
-gamma_check <- seq(0.01, 0.50, length.out = num_epsilon_gamma_check)
+num_epsilon_gamma_check <- 50
+gamma_check <- seq(0.0001, 0.50, length.out = num_epsilon_gamma_check)
 epsilon_check <- seq(0.01, 0.99, length.out = num_epsilon_gamma_check)
 alpha <- 0.10                                     # Confidence level
 
@@ -311,6 +311,7 @@ for (gamma_epsilon_index in 1:num_epsilon_gamma_check) {
     Lambda1_star_flat <- (t(z_hat_flat) %*% (T_flat * A_flat_tr) %*% z_hat_flat) /
       comm_pair_sample_size_flat_ones
 
+    # Non-conservative
     Lambda0_var_flat <- (t(z_hat_flat) %*% (T_flat * (1 - T_flat) * (1 - A_flat_tr)) %*% z_hat_flat) /
       comm_pair_sample_size_flat_zeros^2
     Lambda1_var_flat <- (t(z_hat_flat) %*% (T_flat * (1 - T_flat) * A_flat_tr) %*% z_hat_flat) /

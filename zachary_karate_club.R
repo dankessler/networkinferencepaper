@@ -46,112 +46,296 @@ zachary <- zachary + t(zachary)
 true_communities <- c(1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 1, 1, 2,
                       1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2)
 
+# =======================
+# == Helpful functions ==
+# =======================
+
+logit <- function(x) {
+  return(log(x / (1 - x)))
+}
+expit <- function(x) {
+  return(exp(x) / (1 + exp(x)))
+}
+h0 <- function(x, gamma) {
+  return(expit(logit(x) + log(gamma / (1 - gamma))))
+}
+h0_alt <- function(x, gamma) {
+  return(x / (x + (1-x)*((1-gamma) / gamma)))
+}
+h1 <- function(x, gamma) {
+  return(expit(logit(x) + log((1 - gamma) / gamma)))
+}
+h0_inv <- function(x, gamma) {
+  return(h1(x, gamma))
+}
+h1_inv <- function(x, gamma) {
+  return(h0(x, gamma))
+}
+h1_inv_deriv <- function(x, gamma) {
+  c0 <- log(gamma / (1 - gamma))
+  return((expit(logit(x) + c0) / (1 + exp(logit(x) + c0))) / (x*(1-x)))
+}
+h0_inv_deriv <- function(x, gamma) {
+  c1 <- log((1 - gamma) / gamma)
+  return((expit(logit(x) + c1) / (1 + exp(logit(x) + c1))) / (x*(1-x)))
+}
+
 # ============================================
 # == Check through multiple values of gamma ==
 # ============================================
 
-gamma_check <- seq(0.00, 0.50, length.out = 50)
-num_sim_per_gamma <- 200
+gamma_check <- seq(0.0001, 0.50, length.out = 50)
+gamma_check_failed <- rep(FALSE, length.out = length(gamma_check))
+num_sim_per_gamma <- 1
+
 rand_results_fission_true <- array(0, dim = c(length(gamma_check), num_sim_per_gamma))
 rand_results_fission_full <- array(0, dim = c(length(gamma_check), num_sim_per_gamma))
+
 ci_midpoint <- array(0, dim = c(length(gamma_check), num_sim_per_gamma))
 ci_lower <- array(0, dim = c(length(gamma_check), num_sim_per_gamma))
 ci_upper <- array(0, dim = c(length(gamma_check), num_sim_per_gamma))
 
 for (gamma_index in 1:length(gamma_check)) {
   gamma <- gamma_check[gamma_index]
+  c0 <- log(gamma / (1-gamma))
+  c1 <- log((1-gamma) / gamma)
 
   for (rep in 1:num_sim_per_gamma) {
 
-    # Do clustering on the full version of the matrix
-    z_hat_full_initial <- nett::spec_clust(zachary, K = K)
-    z_hat_full <- matrix(rep(NA, n*K), nrow = n)
-    for (i in 1:K) {
-      z_hat_full[, i] <- 1 * (z_hat_full_initial == i)
-    }
-    n_hat_full <- apply(z_hat_full, 2, sum)
+    # Sometimes, iterations of fission result in cases where we have all zeros
+    # or ones within a set of nodes where A_tr = 0 or A_tr = 1, which causes
+    # division by zero issues. For purposes of "averaging over gamma," I will
+    # exclude these cases since it is unclear how to handle them.
+    need_good_matrix <- TRUE
+    times_good_matrix_attempted <- 0
+    limits_on_attempts <- 1000
 
-    # -------------------------------------------------
-    # -- Fission the matrix with this value of gamma --
-    # -------------------------------------------------
+    while(need_good_matrix) {
+      times_good_matrix_attempted <- times_good_matrix_attempted + 1
 
-    # Although we create an entire 34x34 matrix, only the upper triangular
-    # portion ever gets used.
-    Zfission_temp <- matrix(rbinom(n = n^2, size = 1, prob = gamma), nrow = n)
-    Zfission <- matrix(0, nrow = n, ncol = n)
-    Zfission[upper.tri(Zfission)] <- Zfission_temp[upper.tri(Zfission_temp)]
-    Zfission <- Zfission + t(Zfission)
+      # Do clustering on the full version of the matrix
+      z_hat_full_initial <- nett::spec_clust(zachary, K = K)
+      z_hat_full <- matrix(rep(NA, n*K), nrow = n)
+      for (i in 1:K) {
+        z_hat_full[, i] <- 1 * (z_hat_full_initial == i)
+      }
+      n_hat_full <- apply(z_hat_full, 2, sum)
 
-    # Fission
-    zachary_tr <- zachary * (1 - Zfission) + (1 - zachary) * Zfission
+      # -------------------------------------------------
+      # -- Fission the matrix with this value of gamma --
+      # -------------------------------------------------
 
-    # Cluster using the training set
-    z_hat_initial <- nett::spec_clust(zachary_tr, K = K)
-    z_hat <- matrix(rep(NA, n*K), nrow = n)
-    for (i in 1:K) {
-      z_hat[, i] <- 1 * (z_hat_initial == i)
-    }
-    n_hat <- apply(z_hat, 2, sum)
+      # Although we create an entire 34x34 matrix, only the upper triangular
+      # portion ever gets used.
+      Zfission_temp <- matrix(rbinom(n = n^2, size = 1, prob = gamma), nrow = n)
+      Zfission <- matrix(0, nrow = n, ncol = n)
+      Zfission[upper.tri(Zfission)] <- Zfission_temp[upper.tri(Zfission_temp)]
+      Zfission <- Zfission + t(Zfission)
 
-    # -----------------------------------
-    # -- Check agreement of clustering --
-    # -----------------------------------
+      # Fission
+      zachary_tr <- zachary * (1 - Zfission) + (1 - zachary) * Zfission
 
-    rand_results_fission_full[gamma_index, rep] <- mclust::adjustedRandIndex(z_hat_full_initial, z_hat_initial)
-    rand_results_fission_true[gamma_index, rep] <- mclust::adjustedRandIndex(true_communities, z_hat_initial)
+      # Cluster using the training set
+      z_hat_initial <- nett::spec_clust(zachary_tr, K = K)
+      z_hat <- matrix(rep(NA, n*K), nrow = n)
+      for (i in 1:K) {
+        z_hat[, i] <- 1 * (z_hat_initial == i)
+      }
+      n_hat <- apply(z_hat, 2, sum)
 
-    # ------------------
-    # -- Do inference --
-    # ------------------
+      # -----------------------------------
+      # -- Check agreement of clustering --
+      # -----------------------------------
 
-    # Calculate our estimator and its target
-    B <- matrix(0, nrow = K, ncol = K)
-    Delta <- matrix(0, nrow = K, ncol = K)
+      rand_results_fission_full[gamma_index, rep] <- mclust::adjustedRandIndex(z_hat_full_initial, z_hat_initial)
+      rand_results_fission_true[gamma_index, rep] <- mclust::adjustedRandIndex(true_communities, z_hat_initial)
 
-    for (k in 1:K) {
-      for (l in 1:K) {
-        k_nodes <- which(z_hat_initial == k)
-        l_nodes <- which(z_hat_initial == l)
+      # ------------------
+      # -- Do inference --
+      # ------------------
 
-        # Create the index set of all edges which point from k to l,
-        # and all edges that point from l to k.
-        Ikl <- rbind(as.matrix(expand.grid(k_nodes, l_nodes)),
-                     as.matrix(expand.grid(l_nodes, k_nodes)))
-        # Cut down this index set to just the edges (i, j) where i < j
-        # which avoids the redundancy due to the symmetry in the network.
-        Ikl_prime <- Ikl[Ikl[, 1] < Ikl[, 2], ]
+      # Calculate our estimator and its target
+      B0 <- matrix(0, nrow = K, ncol = K)
+      B1 <- matrix(0, nrow = K, ncol = K)
+      Delta0 <- matrix(0, nrow = K, ncol = K)
+      Delta1 <- matrix(0, nrow = K, ncol = K)
+      Delta <- matrix(0, nrow = K, ncol = K)
+      Phi <- matrix(0, nrow = K, ncol = K)
 
-        # Estimator
-        for (ij_index in 1:nrow(Ikl_prime)) {
-          ij <- Ikl_prime[ij_index, ]
-          B[k, l] <- B[k, l] + zachary[ij[1], ij[2]]
+      for (k in 1:K) {
+        for (l in 1:K) {
+          k_nodes <- which(z_hat_initial == k)
+          l_nodes <- which(z_hat_initial == l)
+
+          # Create the index set of all edges which point from k to l,
+          # and all edges that point from l to k.
+          Ikl <- rbind(as.matrix(expand.grid(k_nodes, l_nodes)),
+                       as.matrix(expand.grid(l_nodes, k_nodes)))
+          # Cut down this index set to just the edges (i, j) where i < j
+          # which avoids the redundancy due to the symmetry in the network.
+          Ikl_prime <- Ikl[Ikl[, 1] < Ikl[, 2], ]
+          num_Ikl_pr <- nrow(Ikl_prime)
+          num_0s <- 0
+          num_1s <- 0
+
+          # Estimator
+          for (ij_index in 1:nrow(Ikl_prime)) {
+            ij <- Ikl_prime[ij_index, ]
+
+            if (zachary_tr[ij[1], ij[2]] == 0) {
+              B0[k, l] <- B0[k, l] + zachary[ij[1], ij[2]]
+              num_0s <- num_0s + 1
+            } else {
+              B1[k, l] <- B1[k, l] + zachary[ij[1], ij[2]]
+              num_1s <- num_1s + 1
+            }
+          }
+          B0[k, l] <- B0[k, l] / num_0s
+          B1[k, l] <- B1[k, l] / num_1s
+          Phi[k, l] <- (num_0s / num_Ikl_pr) * (B0[k, l] / (B0[k, l] + ((1 - B0[k, l]) * gamma / (1-gamma)))) +
+            (num_1s / num_Ikl_pr) * (B1[k, l] / (B1[k, l] + ((1 - B1[k, l]) * (1-gamma) / gamma)))
+          # Phi[k, l] <- (num_0s / num_Ikl_pr) * h0_inv(B0[k, l], gamma) +
+          #   (num_1s / num_Ikl_pr) * h1_inv(B1[k, l], gamma)
+
+          # Variance
+          G1_G2_0 <- (B0[k, l] * (1 - B0[k, l]) * exp(2*c0)) /
+            (num_0s * ((1 - B0[k, l])*exp(c0) + B0[k, l])^4)
+          G1_G2_1 <- (B1[k, l] * (1 - B1[k, l]) * exp(2*c1)) /
+            (num_1s * ((1 - B1[k, l])*exp(c1) + B1[k, l])^4)
+
+          G1_G2_0[is.nan(G1_G2_0)] <- Inf
+          G1_G2_1[is.nan(G1_G2_1)] <- Inf
+
+          G1_G2_0 <- pmin(G1_G2_0, 0.25)
+          G1_G2_1 <- pmin(G1_G2_1, 0.25)
+
+
+          # Delta0 <- ((B0[k, l] * (1 - B0[k, l])) / num_0s) * (h0_inv_deriv(B0[k, l], gamma))^2
+          # Delta1 <- ((B1[k, l] * (1 - B1[k, l])) / num_1s) * (h1_inv_deriv(B1[k, l], gamma))^2
+          Delta[k, l] <- (num_0s / num_Ikl_pr)^2 * G1_G2_0 + (num_1s / num_Ikl_pr)^2 * G1_G2_1
         }
-        B[k, l] <- B[k, l] / nrow(Ikl_prime)
+      }
 
-        # Variance
-        Delta[k, l] <- (B[k, l] * (1 - B[k, l])) / nrow(Ikl_prime)
+      # Check if we passed the variance check
+      if (sum(is.nan(Delta)) == 0) {
+        need_good_matrix <- FALSE
+
+        u <- c(1, -2, 0, 1)
+        u <- u / sqrt(sum(u^2))
+
+        # Build a confidence interval
+        alpha <- 0.90
+        estimate <- t(u) %*% as.vector(Phi)
+        estimate_var <- t(u) %*% diag(as.vector(Delta)) %*% u
+        margin_of_error <- qnorm(1 - alpha / 2) * sqrt(estimate_var)
+
+        # Record the confidence interval
+        ci_midpoint[gamma_index, rep] <- estimate
+        ci_lower[gamma_index, rep] <- estimate - margin_of_error
+        ci_upper[gamma_index, rep] <- estimate + margin_of_error
+      }
+      if (times_good_matrix_attempted > limits_on_attempts) {
+        need_good_matrix <- FALSE
+        gamma_check_failed[gamma_index] <- TRUE
       }
     }
-
-    u <- c(1, -2, 0, 1)
-    u <- u / sqrt(sum(u^2))
-
-    # Build a confidence interval
-    alpha <- 0.10
-    estimate <- t(u) %*% as.vector(B)
-    estimate_var <- t(u) %*% diag(as.vector(Delta)) %*% u
-    margin_of_error <- qnorm(1 - alpha / 2) * sqrt(estimate_var)
-
-    # Record the confidence interval
-    ci_midpoint[gamma_index, rep] <- estimate
-    ci_lower[gamma_index, rep] <- estimate - margin_of_error
-    ci_upper[gamma_index, rep] <- estimate + margin_of_error
   }
 }
+
+# ====================================================
+# == Also do estimation with true known communities ==
+# ====================================================
+
+u <- c(1, -2, 0, 1)
+u <- u / sqrt(sum(u^2))
+
+z_true <- matrix(rep(NA, n*K), nrow = n)
+for (i in 1:K) {
+  z_true[, i] <- 1 * (true_communities == i)
+}
+n_true <- apply(z_true, 2, sum)
+NN_true_inv <- diag(1 / diag(t(z_true) %*% z_true))
+
+zachary_matrix_est <- matrix(0, nrow = K, ncol = K)
+zachary_matrix_var_est <- matrix(0, nrow = K, ncol = K)
+
+for (k in 1:K) {
+  for (l in 1:K) {
+    k_nodes <- which(true_communities == k)
+    l_nodes <- which(true_communities == l)
+
+    # Create the index set of all edges which point from k to l,
+    # and all edges that point from l to k.
+    Ikl <- rbind(as.matrix(expand.grid(k_nodes, l_nodes)),
+                 as.matrix(expand.grid(l_nodes, k_nodes)))
+    # Cut down this index set to just the edges (i, j) where i < j
+    # which avoids the redundancy due to the symmetry in the network.
+    Ikl_prime <- Ikl[Ikl[, 1] < Ikl[, 2], ]
+    num_Ikl_pr <- nrow(Ikl_prime)
+
+    # Estimator
+    for (ij_index in 1:nrow(Ikl_prime)) {
+      ij <- Ikl_prime[ij_index, ]
+      zachary_matrix_est[k, l] <- zachary_matrix_est[k, l] + zachary[ij[1], ij[2]]
+    }
+    zachary_matrix_est[k, l] <- zachary_matrix_est[k, l] / num_Ikl_pr
+    zachary_matrix_var_est[k, l] <- zachary_matrix_est[k, l] * (1 - zachary_matrix_est[k, l]) / num_Ikl_pr
+  }
+}
+
+# Build a confidence interval
+alpha <- 0.90
+estimate_true <- t(u) %*% as.vector(zachary_matrix_est)
+estimate_true_var <- t(u) %*% diag(as.vector(zachary_matrix_var_est)) %*% u
+margin_of_error_true <- qnorm(1 - alpha / 2) * sqrt(estimate_true_var)
+
+estimate_true_lb <- estimate_true - margin_of_error_true
+estimate_true_ub <- estimate_true + margin_of_error_true
+
+# Z(A) vs Ztrue
+mclust::adjustedRandIndex(z_hat_full_initial, true_communities)
+
+# For 1/30/25 suggestion I look at theta(A) using Zhat
+theta_Zhat_midpoint <- matrix(0, nrow = K, ncol = K)
+for (k in 1:K) {
+  for (l in 1:K) {
+    k_nodes <- which(z_hat_full_initial == k)
+    l_nodes <- which(z_hat_full_initial == l)
+
+    # Create the index set of all edges which point from k to l,
+    # and all edges that point from l to k.
+    Ikl <- rbind(as.matrix(expand.grid(k_nodes, l_nodes)),
+                 as.matrix(expand.grid(l_nodes, k_nodes)))
+    # Cut down this index set to just the edges (i, j) where i < j
+    # which avoids the redundancy due to the symmetry in the network.
+    Ikl_prime <- Ikl[Ikl[, 1] < Ikl[, 2], ]
+    num_Ikl_pr <- nrow(Ikl_prime)
+
+    # Estimator
+    for (ij_index in 1:nrow(Ikl_prime)) {
+      ij <- Ikl_prime[ij_index, ]
+      theta_Zhat_midpoint[k, l] <- theta_Zhat_midpoint[k, l] + zachary[ij[1], ij[2]]
+    }
+    theta_Zhat_midpoint[k, l] <- theta_Zhat_midpoint[k, l] / num_Ikl_pr
+  }
+}
+theta_Zhat_temp <- t(u) %*% as.vector(theta_Zhat_midpoint)
 
 # ====================
 # == Create figures ==
 # ====================
+
+axis.text.x.size <- 15
+axis.text.y.size <- 15
+axis.title.x.size <- 21
+axis.title.y.size <- 14
+legend.title.size <- 18
+legend.text.size <- 15
+legend.text.size.small <- 14
+thick_linewidth = 1.0
+thin_linewidth = 0.9
+legend.linewidth.thick <- 0.9
+legend.linewidth.thin <- 0.7
 
 # ---------------------------------------
 # -- RAND index as a function of gamma --
@@ -165,56 +349,104 @@ plot_df <- data.frame(gamma = gamma_check,
                       avg_rand_fission_true = avg_rand_results_fission_true)
 
 zachary_randindex_gamma <- ggplot(plot_df) +
-  geom_line(aes(x = gamma, y = avg_rand_fission_full, color = 'against_full'), alpha = 0.7, size = 1.1) +
-  geom_line(aes(x = gamma, y = avg_rand_fission_true, color = 'against_true'), alpha = 0.7, size = 1.1) +
+  geom_line(aes(x = gamma, y = avg_rand_fission_full, color = 'against_full'), alpha = 0.9, linewidth = thick_linewidth) +
+  geom_line(aes(x = gamma, y = avg_rand_fission_true, color = 'against_true'), alpha = 0.9, linewidth = thick_linewidth) +
   xlab(TeX('$\\gamma$')) + ylab('Adjusted RAND Index') +
-  labs(color = 'Comparison') +
+  labs(color = 'Legend') +
   scale_color_manual(
     values = c('against_full' = 'darkslategray4', against_true = 'firebrick3'),
-    labels = c(TeX('$\\hat{Z}^{(tr),\\gamma}$ and $\\hat{Z}^{(full)}$'), TeX('$\\hat{Z}^{(tr),\\gamma}$ and $Z^{(true)}$'))
+    labels = c(TeX('$\\hat{Z}(A^{(tr)}_\\gamma)$ and $\\hat{Z}(A)$'), TeX('$\\hat{Z}(A^{(tr)}_\\gamma)$ and $Z^{(true)}$'))
   ) +
   theme(aspect.ratio = 1,
-        axis.text.x = element_text(size = 16),
-        axis.text.y = element_text(size = 16),
-        axis.title.x = element_text(size = 25),
-        axis.title.y = element_text(size = 16),
-        legend.title = element_text(size = 18),
-        legend.text = element_text(size = 15))
+        axis.text.x = element_text(size = axis.text.x.size),
+        axis.text.y = element_text(size = axis.text.y.size),
+        axis.title.x = element_text(size = axis.title.x.size),
+        axis.title.y = element_text(size = axis.title.y.size),
+        legend.title = element_text(size = legend.title.size),
+        legend.text = element_text(size = legend.text.size))
 zachary_randindex_gamma
 ggsave('figures/zachary_randindex_gamma.pdf', plot = zachary_randindex_gamma,
-       device = 'pdf', width = 6, height = 4.5)
+       device = 'pdf', width = 14, height = 8, units = 'cm')
 
 # -------------------------------------------------
 # -- Confidence intervals as a function of gamma --
 # -------------------------------------------------
 
-avg_ci_midpoint <- apply(ci_midpoint, 1, mean)
-avg_ci_lower <- apply(ci_lower, 1, mean)
-avg_ci_upper <- apply(ci_upper, 1, mean)
+axis.text.x.size <- 15
+axis.text.y.size <- 15
+axis.title.x.size <- 21
+axis.title.y.size <- 14
+legend.title.size <- 18
+legend.text.size <- 15
+legend.text.size.small <- 14
+thick_linewidth = 1.0
+thin_linewidth = 0.5
+legend.linewidth.thick <- 0.9
+legend.linewidth.thin <- 0.7
 
-plot_df <- data.frame(gamma = gamma_check,
-                      avg_ci_midpoint = avg_ci_midpoint,
-                      avg_ci_lower = avg_ci_lower,
-                      avg_ci_upper = avg_ci_upper)
+avg_ci_midpoint <- apply(ci_midpoint, 1, mean, na.rm = TRUE)
+avg_ci_lower <- apply(ci_lower, 1, mean, na.rm = TRUE)
+avg_ci_upper <- apply(ci_upper, 1, mean, na.rm = TRUE)
 
-zachary_CI_gamma <- ggplot(plot_df) +
-  geom_line(aes(x = gamma, y = avg_ci_lower, color = 'bounds'), size = 1.1) +
-  geom_line(aes(x = gamma, y = avg_ci_midpoint, color = 'midpoint'), size = 1.1) +
-  geom_line(aes(x = gamma, y = avg_ci_upper, color = 'bounds'), size = 1.1) +
-  geom_line(aes(x = gamma, y = 0), linetype = 'dashed', alpha = 0.6, size = 0.8) +
-  xlab(TeX('$\\gamma$')) + ylab(TeX('$\\theta(A^{(tr)}_\\gamma)$')) +
-  labs(color = 'Confidence interval') +
+plot_df_midpoint <- data.frame(gamma = gamma_check, avg_xi_hat = avg_ci_midpoint)
+plot_df_ci_lower <- data.frame(gamma = gamma_check, ci_bounds_xi = avg_ci_lower)
+plot_df_ci_upper <- data.frame(gamma = gamma_check, ci_bounds_xi = avg_ci_upper)
+
+# Workaround for getting long math label to get on two lines
+# theta_true_bounds_top_exp <- TeX('90% CI for $\\theta(A)$')
+# theta_true_bounds_bottom_exp <- TeX('using $Z^{(true)}$')
+# theta_true_bounds_exp <- expression(atop())
+
+legend_values <- c('avg_xi_hat' = 'palevioletred3',
+                   'ci_bounds_xi' = 'palevioletred3',
+                   'est_true' = 'cadetblue',
+                   'est_true_bounds' = 'cadetblue')
+legend_values_linetype <- c('avg_xi_hat' = 'solid',
+                            'ci_bounds_xi' = 'dashed',
+                            'est_true' = 'solid',
+                            'est_true_bounds' = 'dashed')
+legend_labels <- c('avg_xi_hat' = TeX('$\\hat{\\xi}(A_{\\gamma}^{(tr)})$'),
+                   'ci_bounds_xi' = TeX('90% CI for $\\xi(A_{\\gamma}^{(tr)})$'),
+                   'est_true' = TeX('$\\hat{\\theta}(A)$ using $Z^{(true)}$'),
+                   'est_true_bounds' = TeX('90% CI for $\\theta(A)$'))
+                   # 'est_true_bounds' = TeX('90% CI for $\\theta(A)$ using $Z^{(true)}$'))
+
+zachary_CI_gamma <- ggplot() +
+  geom_line(data = plot_df_midpoint, aes(x = gamma, y = 0), linetype = 'dashed', alpha = 0.6, linewidth = thin_linewidth) +
+  geom_line(data = plot_df_midpoint, aes(x = gamma, y = avg_xi_hat, color = 'avg_xi_hat', linetype = 'avg_xi_hat'), linewidth = thick_linewidth) +
+  geom_line(data = plot_df_ci_upper, aes(x = gamma, y = ci_bounds_xi, color = 'ci_bounds_xi', linetype = 'ci_bounds_xi'), linewidth = thin_linewidth) +
+  geom_line(data = plot_df_ci_lower, aes(x = gamma, y = ci_bounds_xi, color = 'ci_bounds_xi', linetype = 'ci_bounds_xi'), linewidth = thin_linewidth) +
+  geom_line(data = plot_df_midpoint, aes(x = gamma, y = estimate_true, color = 'est_true', linetype = 'est_true'), linewidth = thick_linewidth) +
+  geom_line(data = plot_df_midpoint, aes(x = gamma, y = estimate_true_lb, color = 'est_true_bounds', linetype = 'est_true_bounds'), linewidth = thin_linewidth) +
+  geom_line(data = plot_df_midpoint, aes(x = gamma, y = estimate_true_ub, color = 'est_true_bounds', linetype = 'est_true_bounds'), linewidth = thin_linewidth) +
+  xlab(TeX('$\\gamma$')) + ylab('') +
+  labs(color = 'Legend') +
   scale_color_manual(
-    values = c('bounds' = 'darkslategray4', 'midpoint' = 'firebrick3'),
-    labels = c('Lower/upper bounds', 'Estimate')
+    values = legend_values,
+    labels = legend_labels
+  ) +
+  scale_linetype_manual(
+    values = legend_values_linetype,
+    labels = legend_labels
   ) +
   theme(aspect.ratio = 1,
-        axis.text.x = element_text(size = 16),
-        axis.text.y = element_text(size = 16),
-        axis.title.x = element_text(size = 25),
-        axis.title.y = element_text(size = 16),
-        legend.title = element_text(size = 18),
-        legend.text = element_text(size = 15))
+        axis.text.x = element_text(size = axis.text.x.size),
+        axis.text.y = element_text(size = axis.text.y.size),
+        axis.title.x = element_text(size = axis.title.x.size),
+        axis.title.y = element_text(size = axis.title.y.size),
+        legend.title = element_text(size = legend.title.size),
+        legend.text = element_text(size = legend.text.size)) +
+  guides(color = guide_legend(override.aes = list(
+    linetype = c('solid', 'dashed'),
+    linewidth = c(legend.linewidth.thick, legend.linewidth.thin)
+  )),
+  linetype = 'none')
 zachary_CI_gamma
 ggsave('figures/zachary_CI_gamma.pdf', plot = zachary_CI_gamma,
-       device = 'pdf', width = 6, height = 4.5)
+       device = 'pdf', width = 14, height = 8, units = 'cm')
+
+
+ci_widths <- avg_ci_upper - avg_ci_lower
+plot_df <- data.frame(gamma = gamma_check, ci_widths = ci_widths)
+ggplot(plot_df) +
+  geom_line(aes(x = gamma, y = ci_widths))

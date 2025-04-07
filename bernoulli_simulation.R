@@ -111,7 +111,8 @@ num_sim <- 5000 # Number of replications
 n_check <- c(200) # Total network size
 K_check <- c(5) # Guessed number of communities
 K_true_check <- c(5)
-gamma_check <- c(0.05, 0.10, 0.15, 0.20, 0.25, 0.30, 0.35, 0.40, 0.45)
+gamma_check <- c(0.001, 0.025, 0.05, 0.075, 0.10, 0.125, 0.15, 0.175, 0.20, 0.225,
+                 0.25, 0.275, 0.30, 0.325, 0.35, 0.375, 0.40, 0.424, 0.45, 0.475, 0.499)
 signal_regimes <- list(c(0.75, 0.55), c(0.75, 0.50), c(0.75, 0.45), c(0.75, 0.40), c(0.75, 0.35)) # Signal regimes for mean matrix
 
 alpha <- 0.10
@@ -163,6 +164,12 @@ xi_variances_thinning <- array(0, dim = c(length(n_check),
                                        length(signal_regimes),
                                        length(gamma_check),
                                        num_sim))
+xi_variances_true_thinning <- array(0, dim = c(length(n_check),
+                                          length(K_true_check),
+                                          length(K_check),
+                                          length(signal_regimes),
+                                          length(gamma_check),
+                                          num_sim))
 
 theta_est_naive <- array(0, dim = c(length(n_check),
                                     length(K_true_check),
@@ -329,6 +336,12 @@ for (n_index in 1:length(n_check)) {
 
               Cmask <- (gamma / (1-gamma))^(2*A_tr - 1) # The constant gamma/(1-gamma) masking thing
               Tmat <- M / (M + (1-M)*Cmask) # Calculate T as a function of M
+              c0 <- log(gamma / (1-gamma))
+              c1 <- log((1-gamma) / gamma)
+
+              # ------------------------------------------
+              # -- Estimands and estimators (all means) --
+              # ------------------------------------------
 
               # Estimators and estimands related to xi(Atr)
               Lambda0_star <- (t(z_hat) %*% (Tmat * (1 - A_tr)) %*% z_hat) /
@@ -340,6 +353,21 @@ for (n_index in 1:length(n_check)) {
               Lambda1_hat <- (t(z_hat) %*% (A * A_tr) %*% z_hat) /
                 comm_pair_sample_size_ones
 
+              # Means that we are targeting
+              # Phi_matrix <- zeros_weighting * h0_inv(Lambda0_star, gamma) + ones_weighting * h1_inv(Lambda1_star, gamma)
+              Phi_matrix <- zeros_weighting * (Lambda0_star / (Lambda0_star + (1 - Lambda0_star) * exp(c0))) +
+                ones_weighting * (Lambda1_star / (Lambda1_star + (1 - Lambda1_star) * exp(c1)))
+
+              # Estimate of the mean that we are targeting
+              # Phi_hat_matrix <- zeros_weighting * h0_inv(Lambda0_hat, gamma) + ones_weighting * h1_inv(Lambda1_hat, gamma)
+              Phi_hat_matrix <- zeros_weighting * (Lambda0_hat / (Lambda0_hat + (1 - Lambda0_hat) * exp(c0))) +
+                ones_weighting * (Lambda1_hat / (Lambda1_hat + (1 - Lambda1_hat) * exp(c1)))
+
+              # ---------------------------
+              # -- Variance calculations --
+              # ---------------------------
+
+              # These are the "G_{2, \gamma}" pieces
               Lambda0_var_ideal <- (t(z_hat) %*% (Tmat * (1 - Tmat) * (1 - A_tr)) %*% z_hat) /
                 comm_pair_sample_size_zeros^2
               Lambda0_var_est <- (Lambda0_hat * (1 - Lambda0_hat)) / comm_pair_sample_size_zeros
@@ -348,15 +376,54 @@ for (n_index in 1:length(n_check)) {
                 comm_pair_sample_size_ones^2
               Lambda1_var_est <- (Lambda1_hat * (1 - Lambda1_hat)) / comm_pair_sample_size_ones
 
-              Phi_matrix <- zeros_weighting * h0_inv(Lambda0_star, gamma) + ones_weighting * h1_inv(Lambda1_star, gamma)
-              Phi_hat_matrix <- zeros_weighting * h0_inv(Lambda0_hat, gamma) + ones_weighting * h1_inv(Lambda1_hat, gamma)
+              # Most conservative variance bound in case things get too large
+              most_conservative_variance_0s <- 0.25 # / comm_pair_sample_size_zeros
+              most_conservative_variance_1s <- 0.25 # / comm_pair_sample_size_ones
 
-              Phi_var_matrix_ideal <- (zeros_weighting^2 * (Lambda0_var_ideal * (h0_inv_deriv(Lambda0_star, gamma))^2)) +
-                (ones_weighting^2 * (Lambda1_var_ideal * (h1_inv_deriv(Lambda1_star, gamma))^2))
+              # Calculate pieces of the variance
+              # G1_G2_0_ideal_multiplication <- Lambda0_var_ideal * (h0_inv_deriv(Lambda0_star, gamma))^2
+              # G1_G2_1_ideal_multiplication <- Lambda1_var_ideal * (h1_inv_deriv(Lambda0_star, gamma))^2
+              # G1_G2_0_hat_multiplication <- Lambda0_var_est * (h0_inv_deriv(Lambda0_hat, gamma))^2
+              # G1_G2_1_hat_multiplication <- Lambda1_var_est * (h1_inv_deriv(Lambda1_hat, gamma))^2
 
-              Phi_var_matrix_est <- zeros_weighting^2 * Lambda0_var_est * (h0_inv_deriv(Lambda0_hat, gamma))^2 +
-                ones_weighting^2 * Lambda1_var_est * (h1_inv_deriv(Lambda1_hat, gamma))^2
+              # Variance estimate given in the paper (probably more stable?)
+              Bstar0 <- (t(z_hat) %*% (Tmat * (1 - A_tr)) %*% z_hat) / comm_pair_sample_size_zeros
+              Bstar1 <- (t(z_hat) %*% (Tmat * A_tr) %*% z_hat) / comm_pair_sample_size_ones
+              Bhat0 <- (t(z_hat) %*% (A * (1 - A_tr)) %*% z_hat) / comm_pair_sample_size_zeros
+              Bhat1 <- (t(z_hat) %*% (A * A_tr) %*% z_hat) / comm_pair_sample_size_ones
 
+              G1_G2_0_ideal_multiplication <- (Bstar0 * (1 - Bstar0) * exp(2*c0)) /
+                (comm_pair_sample_size_zeros * ((1 - Bstar0)*exp(c0) + Bstar0)^4)
+              G1_G2_1_ideal_multiplication <- (Bstar1 * (1 - Bstar1) * exp(2*c1)) /
+                (comm_pair_sample_size_ones * ((1 - Bstar1)*exp(c1) + Bstar1)^4)
+              G1_G2_0_hat_multiplication <- (Bhat0 * (1 - Bhat0) * exp(2*c0)) /
+                (comm_pair_sample_size_zeros * ((1 - Bhat0)*exp(c0) + Bhat0)^4)
+              G1_G2_1_hat_multiplication <- (Bhat1 * (1 - Bhat1) * exp(2*c1)) /
+                (comm_pair_sample_size_ones * ((1 - Bhat1)*exp(c1) + Bhat1)^4)
+
+              # Just in case if we get divisions by zero etc.
+              G1_G2_0_hat_multiplication[is.nan(G1_G2_0_hat_multiplication)] <- Inf
+              G1_G2_1_hat_multiplication[is.nan(G1_G2_1_hat_multiplication)] <- Inf
+
+              # Apply the conservative variance bound to the estimate
+              G1_G2_0_hat_multiplication <- pmin(G1_G2_0_hat_multiplication, most_conservative_variance_0s)
+              G1_G2_1_hat_multiplication <- pmin(G1_G2_1_hat_multiplication, most_conservative_variance_1s)
+
+              # (Optional) Apply the conservative variance bound to the ideal estimate
+              G1_G2_0_ideal_multiplication <- pmin(G1_G2_0_ideal_multiplication, most_conservative_variance_0s)
+              G1_G2_1_ideal_multiplication <- pmin(G1_G2_1_ideal_multiplication, most_conservative_variance_1s)
+
+              # Ideal variance (NOT using any estimates)
+              Phi_var_matrix_ideal <-
+                zeros_weighting^2 * G1_G2_0_ideal_multiplication +
+                ones_weighting^2 * G1_G2_1_ideal_multiplication
+
+              # Estimate of the variance
+              Phi_var_matrix_est <-
+                zeros_weighting^2 * G1_G2_0_hat_multiplication +
+                ones_weighting^2 * G1_G2_1_hat_multiplication
+
+              # Put this all together
               xi <- t(u) %*% as.vector(Phi_matrix)
               theta <- t(u) %*% as.vector(NN_inv %*% t(z_hat) %*% M %*% z_hat %*% NN_inv)
               xi_hat <- t(u) %*% as.vector(Phi_hat_matrix)
@@ -376,16 +443,19 @@ for (n_index in 1:length(n_check)) {
               theta_moe_naive <- qnorm(1 - alpha / 2) * sqrt(theta_var_naive)
 
               # We're good to go if there are no community pairs with just one
-              # member in it in the Atr = 0 and Atr = 1 splits, and also if
-              # there are no NaNs which appear in the estimates (which happens if
-              # there are all 1s or all 0s inside of a community pair.)
-              if ((sum(comm_pair_sample_size_ones == 1) == 0) &
-                  (sum(comm_pair_sample_size_zeros == 1) == 0) &
-                  (sum(comm_pair_sample_size_naive == 1) == 0) &
-                  (!is.nan(xi_moe_est)) &
-                  (!is.nan(theta_moe_naive))) {
+              # member in it in the Atr = 0 and Atr = 1 splits.
+              if ((sum(comm_pair_sample_size_ones <= 1) == 0) &
+                  (sum(comm_pair_sample_size_zeros <= 1) == 0) &
+                  (sum(comm_pair_sample_size_naive <= 1) == 0)) {
                 need_good_matrix <- FALSE
               }
+              # if ((sum(comm_pair_sample_size_ones <= 1) == 0) &
+              #     (sum(comm_pair_sample_size_zeros <= 1) == 0) &
+              #     (sum(comm_pair_sample_size_naive <= 1) == 0) &
+              #     (!is.nan(xi_moe_est)) &
+              #     (!is.nan(theta_moe_naive))) {
+              #   need_good_matrix <- FALSE
+              # }
             }
 
             # Save results
@@ -398,6 +468,8 @@ for (n_index in 1:length(n_check)) {
               theta
             xi_variances_thinning[n_index, K_true_index, K_index, signal_regime_index, gamma_index, rep] <-
               t(u) %*% diag(as.vector(Phi_var_matrix_est)) %*% u
+            xi_variances_true_thinning[n_index, K_true_index, K_index, signal_regime_index, gamma_index, rep] <-
+              t(u) %*% diag(as.vector(Phi_var_matrix_ideal)) %*% u
 
             theta_est_naive[n_index, K_true_index, K_index, signal_regime_index, gamma_index, rep] <-
               theta_est_naive_temp
@@ -702,8 +774,11 @@ alpha <- 0.10
 # Figure 2a - CI width as a function of signal, separate by gamma
 # -----------------------------------------------------------------
 ci_width <- 2 * qnorm(1 - alpha / 2) * sqrt(xi_variances_thinning[n_index, K_true_index, K_index, , , ])
+ci_width_true <- 2 * qnorm(1 - alpha / 2) * sqrt(xi_variances_true_thinning[n_index, K_true_index, K_index, , , ])
 # ci_width <- (2 * qnorm(1 - alpha / 2) * sqrt(xi_variances_thinning[n_index, K_true_index, K_index, , , ])) / sqrt(xi_est_thinning[n_index, K_true_index, K_index, , , ])
 ci_width <- apply(ci_width, c(1, 2), mean)
+ci_width_true <- apply(ci_width_true, c(1, 2), mean)
+
 gamma_index_plotting <- matrix(rep(gamma_check, length(signal_regimes)), ncol = length(gamma_check), byrow = TRUE)
 rho_2_plotting <- matrix(rep(rho_2_check, length(gamma_check)), ncol = length(gamma_check))
 rho_1_minus_rho_2_plotting <- matrix(rep(rho_1_minus_rho_2, length(gamma_check)), ncol = length(gamma_check))
@@ -714,6 +789,7 @@ plot_df <- data.frame(signal_index = as.vector(signal_index_plotting),
                       rho_1_minus_rho_2 = as.character(as.vector(rho_1_minus_rho_2_plotting)),
                       #signal_name = paste0('rho_2 = ', as.vector(rho_2_plotting)),
                       ci_width = as.vector(ci_width),
+                      ci_width_true = as.vector(ci_width_true),
                       gamma = as.vector(gamma_index_plotting))
 
 legend_colors <- c('0.2' = 'gold3', '0.25' = 'darkseagreen4',
@@ -726,11 +802,13 @@ for (ri in 1:length(rho_2_check)) {
   # signal_name = paste0('rho2 = ', rho_2_check[ri])
 
   df_subset <- plot_df[plot_df$rho_2 == rho_2_check[ri], ]
+  # figure2a <- figure2a +
+  #   geom_line(aes(x = gamma, y = ci_width, color = rho_1_minus_rho_2), size = 1.0, alpha = 0.7, data = df_subset)
   figure2a <- figure2a +
-    geom_line(aes(x = gamma, y = ci_width, color = rho_1_minus_rho_2), size = 1.0, alpha = 0.7, data = df_subset)
+    geom_line(aes(x = gamma, y = ci_width_true, color = rho_1_minus_rho_2), size = 1.0, alpha = 0.7, data = df_subset)
 }
 figure2a <- figure2a +
-  xlab(TeX('$\\gamma$')) + ylab('Average CI width') +
+  xlab(TeX('$\\gamma$')) + ylab('Average 90% CI width') +
   scale_color_manual(breaks = c('0.2', '0.25', '0.3', '0.35', '0.4'), values = legend_colors) +
   # ggtitle(TeX('Average confidence interval width as a function of $\\gamma$')) +
   labs(color = TeX('$\\rho_1 - \\rho_2$')) +
@@ -769,7 +847,7 @@ figure2b <- ggplot(plot_df) +
   scale_color_manual(breaks = c('100', '101', '102', '103', '104'), values = legend_colors) + # breaks are wrong because I don't want a legend to appear...
   xlab(TeX('$\\gamma')) + ylab('Adjusted RAND Index') +
   coord_fixed() +
-  ylim(c(0, 1.0)) +
+  ylim(c(-0.0002, 1.0)) +
   #ggtitle(TeX('Classification accuracy (Adjusted RAND index) as a function of $\\gamma$')) +
   labs(color = TeX('$\\rho_1 - \\rho_2$')) +
   theme(aspect.ratio = 1,
