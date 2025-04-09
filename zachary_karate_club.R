@@ -84,9 +84,9 @@ h0_inv_deriv <- function(x, gamma) {
 # == Check through multiple values of gamma ==
 # ============================================
 
-gamma_check <- seq(0.0001, 0.50, length.out = 50)
+gamma_check <- seq(0.0001, 0.50, length.out = 20)
 gamma_check_failed <- rep(FALSE, length.out = length(gamma_check))
-num_sim_per_gamma <- 1
+num_sim_per_gamma <- 500
 
 rand_results_fission_true <- array(0, dim = c(length(gamma_check), num_sim_per_gamma))
 rand_results_fission_full <- array(0, dim = c(length(gamma_check), num_sim_per_gamma))
@@ -205,6 +205,10 @@ for (gamma_index in 1:length(gamma_check)) {
 
           G1_G2_0[is.nan(G1_G2_0)] <- Inf
           G1_G2_1[is.nan(G1_G2_1)] <- Inf
+
+          # Should we make really wide confidence intervals when G1_G2_0 is 0?
+          G1_G2_0[G1_G2_0 == 0] <- Inf
+          G1_G2_1[G1_G2_1 == 0] <- Inf
 
           G1_G2_0 <- pmin(G1_G2_0, 0.25)
           G1_G2_1 <- pmin(G1_G2_1, 0.25)
@@ -380,7 +384,7 @@ legend.title.size <- 18
 legend.text.size <- 15
 legend.text.size.small <- 14
 thick_linewidth = 1.0
-thin_linewidth = 0.5
+thin_linewidth = 0.7
 legend.linewidth.thick <- 0.9
 legend.linewidth.thin <- 0.7
 
@@ -392,33 +396,34 @@ plot_df_midpoint <- data.frame(gamma = gamma_check, avg_xi_hat = avg_ci_midpoint
 plot_df_ci_lower <- data.frame(gamma = gamma_check, ci_bounds_xi = avg_ci_lower)
 plot_df_ci_upper <- data.frame(gamma = gamma_check, ci_bounds_xi = avg_ci_upper)
 
+plot_df_errorbars <- data.frame(gamma = gamma_check,
+                                avg_xi_hat = avg_ci_midpoint,
+                                lowpoint = avg_ci_lower,
+                                highpoint = avg_ci_upper)
+plot_df_errorbars_true <- data.frame(gamma = gamma_check,
+                                     est_true = rep(estimate_true, length(gamma_check)),
+                                     est_true_lb = rep(estimate_true_lb, length(gamma_check)),
+                                     est_true_ub = rep(estimate_true_ub, length(gamma_check)))
+
 # Workaround for getting long math label to get on two lines
 # theta_true_bounds_top_exp <- TeX('90% CI for $\\theta(A)$')
 # theta_true_bounds_bottom_exp <- TeX('using $Z^{(true)}$')
 # theta_true_bounds_exp <- expression(atop())
 
 legend_values <- c('avg_xi_hat' = 'palevioletred3',
-                   'ci_bounds_xi' = 'palevioletred3',
                    'est_true' = 'cadetblue',
-                   'est_true_bounds' = 'cadetblue')
+                   'bounds' = 'black')
 legend_values_linetype <- c('avg_xi_hat' = 'solid',
-                            'ci_bounds_xi' = 'dashed',
-                            'est_true' = 'solid',
-                            'est_true_bounds' = 'dashed')
+                            'est_true' = 'solid')
 legend_labels <- c('avg_xi_hat' = TeX('$\\hat{\\xi}(A_{\\gamma}^{(tr)})$'),
-                   'ci_bounds_xi' = TeX('90% CI for $\\xi(A_{\\gamma}^{(tr)})$'),
-                   'est_true' = TeX('$\\hat{\\theta}(A)$ using $Z^{(true)}$'),
-                   'est_true_bounds' = TeX('90% CI for $\\theta(A)$'))
-                   # 'est_true_bounds' = TeX('90% CI for $\\theta(A)$ using $Z^{(true)}$'))
+                   'est_true' = TeX('$\\hat{\\theta}(A)$ using $Z^{(true)}$'))
 
 zachary_CI_gamma <- ggplot() +
   geom_line(data = plot_df_midpoint, aes(x = gamma, y = 0), linetype = 'dashed', alpha = 0.6, linewidth = thin_linewidth) +
   geom_line(data = plot_df_midpoint, aes(x = gamma, y = avg_xi_hat, color = 'avg_xi_hat', linetype = 'avg_xi_hat'), linewidth = thick_linewidth) +
-  geom_line(data = plot_df_ci_upper, aes(x = gamma, y = ci_bounds_xi, color = 'ci_bounds_xi', linetype = 'ci_bounds_xi'), linewidth = thin_linewidth) +
-  geom_line(data = plot_df_ci_lower, aes(x = gamma, y = ci_bounds_xi, color = 'ci_bounds_xi', linetype = 'ci_bounds_xi'), linewidth = thin_linewidth) +
   geom_line(data = plot_df_midpoint, aes(x = gamma, y = estimate_true, color = 'est_true', linetype = 'est_true'), linewidth = thick_linewidth) +
-  geom_line(data = plot_df_midpoint, aes(x = gamma, y = estimate_true_lb, color = 'est_true_bounds', linetype = 'est_true_bounds'), linewidth = thin_linewidth) +
-  geom_line(data = plot_df_midpoint, aes(x = gamma, y = estimate_true_ub, color = 'est_true_bounds', linetype = 'est_true_bounds'), linewidth = thin_linewidth) +
+  geom_linerange(data = plot_df_errorbars_true, aes(x = gamma, y = est_true, ymin = est_true_lb, ymax = est_true_ub, linetype = 'est_true'), color = 'black', linewidth = thin_linewidth, show.legend = FALSE) +
+  geom_linerange(data = plot_df_errorbars, aes(x = gamma, y = avg_xi_hat, ymin = lowpoint, ymax = highpoint, linetype = 'est_true'), color = 'black', linewidth = thin_linewidth, show.legend = FALSE) +
   xlab(TeX('$\\gamma$')) + ylab('') +
   labs(color = 'Legend') +
   scale_color_manual(
@@ -436,17 +441,98 @@ zachary_CI_gamma <- ggplot() +
         axis.title.y = element_text(size = axis.title.y.size),
         legend.title = element_text(size = legend.title.size),
         legend.text = element_text(size = legend.text.size)) +
-  guides(color = guide_legend(override.aes = list(
-    linetype = c('solid', 'dashed'),
-    linewidth = c(legend.linewidth.thick, legend.linewidth.thin)
-  )),
-  linetype = 'none')
+  guides(linetype = 'none')
 zachary_CI_gamma
 ggsave('figures/zachary_CI_gamma.pdf', plot = zachary_CI_gamma,
        device = 'pdf', width = 14, height = 8, units = 'cm')
 
+# Old one with dashed lines for the confidence intervals
 
-ci_widths <- avg_ci_upper - avg_ci_lower
-plot_df <- data.frame(gamma = gamma_check, ci_widths = ci_widths)
-ggplot(plot_df) +
-  geom_line(aes(x = gamma, y = ci_widths))
+# # -------------------------------------------------
+# # -- Confidence intervals as a function of gamma --
+# # -------------------------------------------------
+#
+# axis.text.x.size <- 15
+# axis.text.y.size <- 15
+# axis.title.x.size <- 21
+# axis.title.y.size <- 14
+# legend.title.size <- 18
+# legend.text.size <- 15
+# legend.text.size.small <- 14
+# thick_linewidth = 1.0
+# thin_linewidth = 0.5
+# legend.linewidth.thick <- 0.9
+# legend.linewidth.thin <- 0.7
+#
+# avg_ci_midpoint <- apply(ci_midpoint, 1, mean, na.rm = TRUE)
+# avg_ci_lower <- apply(ci_lower, 1, mean, na.rm = TRUE)
+# avg_ci_upper <- apply(ci_upper, 1, mean, na.rm = TRUE)
+#
+# plot_df_midpoint <- data.frame(gamma = gamma_check, avg_xi_hat = avg_ci_midpoint)
+# plot_df_ci_lower <- data.frame(gamma = gamma_check, ci_bounds_xi = avg_ci_lower)
+# plot_df_ci_upper <- data.frame(gamma = gamma_check, ci_bounds_xi = avg_ci_upper)
+#
+# plot_df_errorbars <- data.frame(gamma = gamma_check,
+#                                midpoint = avg_ci_midpoint,
+#                                lowpoint = avg_ci_lower,
+#                                highpoint = avg_ci_upper)
+#
+# # Workaround for getting long math label to get on two lines
+# # theta_true_bounds_top_exp <- TeX('90% CI for $\\theta(A)$')
+# # theta_true_bounds_bottom_exp <- TeX('using $Z^{(true)}$')
+# # theta_true_bounds_exp <- expression(atop())
+#
+# legend_values <- c('avg_xi_hat' = 'palevioletred3',
+#                    'ci_bounds_xi' = 'palevioletred3',
+#                    'est_true' = 'cadetblue',
+#                    'est_true_bounds' = 'cadetblue')
+# legend_values_linetype <- c('avg_xi_hat' = 'solid',
+#                             'ci_bounds_xi' = 'dashed',
+#                             'est_true' = 'solid',
+#                             'est_true_bounds' = 'dashed')
+# legend_labels <- c('avg_xi_hat' = TeX('$\\hat{\\xi}(A_{\\gamma}^{(tr)})$'),
+#                    'ci_bounds_xi' = TeX('90% CI for $\\xi(A_{\\gamma}^{(tr)})$'),
+#                    'est_true' = TeX('$\\hat{\\theta}(A)$ using $Z^{(true)}$'),
+#                    'est_true_bounds' = TeX('90% CI for $\\theta(A)$'))
+#                    # 'est_true_bounds' = TeX('90% CI for $\\theta(A)$ using $Z^{(true)}$'))
+#
+# zachary_CI_gamma <- ggplot() +
+#   geom_line(data = plot_df_midpoint, aes(x = gamma, y = 0), linetype = 'dashed', alpha = 0.6, linewidth = thin_linewidth) +
+#   geom_line(data = plot_df_midpoint, aes(x = gamma, y = avg_xi_hat, color = 'avg_xi_hat', linetype = 'avg_xi_hat'), linewidth = thick_linewidth) +
+#   geom_line(data = plot_df_ci_upper, aes(x = gamma, y = ci_bounds_xi, color = 'ci_bounds_xi', linetype = 'ci_bounds_xi'), linewidth = thin_linewidth) +
+#   geom_line(data = plot_df_ci_lower, aes(x = gamma, y = ci_bounds_xi, color = 'ci_bounds_xi', linetype = 'ci_bounds_xi'), linewidth = thin_linewidth) +
+#   geom_line(data = plot_df_midpoint, aes(x = gamma, y = estimate_true, color = 'est_true', linetype = 'est_true'), linewidth = thick_linewidth) +
+#   geom_line(data = plot_df_midpoint, aes(x = gamma, y = estimate_true_lb, color = 'est_true_bounds', linetype = 'est_true_bounds'), linewidth = thin_linewidth) +
+#   geom_line(data = plot_df_midpoint, aes(x = gamma, y = estimate_true_ub, color = 'est_true_bounds', linetype = 'est_true_bounds'), linewidth = thin_linewidth) +
+#   geom_linerange(data = plot_df_errorbars, aes(x = gamma, y = midpoint, ymin = lowpoint, ymax = highpoint)) +
+#   xlab(TeX('$\\gamma$')) + ylab('') +
+#   labs(color = 'Legend') +
+#   scale_color_manual(
+#     values = legend_values,
+#     labels = legend_labels
+#   ) +
+#   scale_linetype_manual(
+#     values = legend_values_linetype,
+#     labels = legend_labels
+#   ) +
+#   theme(aspect.ratio = 1,
+#         axis.text.x = element_text(size = axis.text.x.size),
+#         axis.text.y = element_text(size = axis.text.y.size),
+#         axis.title.x = element_text(size = axis.title.x.size),
+#         axis.title.y = element_text(size = axis.title.y.size),
+#         legend.title = element_text(size = legend.title.size),
+#         legend.text = element_text(size = legend.text.size)) +
+#   guides(color = guide_legend(override.aes = list(
+#     linetype = c('solid', 'dashed'),
+#     linewidth = c(legend.linewidth.thick, legend.linewidth.thin)
+#   )),
+#   linetype = 'none')
+# zachary_CI_gamma
+# ggsave('figures/zachary_CI_gamma.pdf', plot = zachary_CI_gamma,
+#        device = 'pdf', width = 14, height = 8, units = 'cm')
+#
+#
+# ci_widths <- avg_ci_upper - avg_ci_lower
+# plot_df <- data.frame(gamma = gamma_check, ci_widths = ci_widths)
+# ggplot(plot_df) +
+#   geom_line(aes(x = gamma, y = ci_widths))
