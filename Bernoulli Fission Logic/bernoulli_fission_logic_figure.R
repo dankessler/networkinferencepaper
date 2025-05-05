@@ -40,7 +40,8 @@ for (gamma_index in 1:length(gamma_check)) {
                     matrix(0.4, nrow = n / 2, ncol = n / 2)),
               cbind(matrix(0.4, nrow = n / 2, ncol = n / 2),
                     matrix(0.6, nrow = n / 2, ncol = n / 2)))
-  M3 <- matrix(sample(c(0.2, 0.8), n^2, rep = TRUE), nrow = n, ncol = n)
+  # M3 <- matrix(sample(c(0.2, 0.8), n^2, rep = TRUE), nrow = n, ncol = n)
+  M3 <- matrix(runif(n^2), nrow = n, ncol = n)
 
   settings <- c(1, 2, 3)
   for (setting in settings) {
@@ -127,6 +128,8 @@ shared_color_scale <- scale_color_manual(values = legend_values,
                                          labels = legend_labels,
                                          breaks = c('vkl_bkl', 'phikl_bkl'))
 
+y_limits <- c(0, 0.015)
+
 # Create a plot for each of the settings
 settings_plots <- list()
 for (setting in 1:3) {
@@ -144,6 +147,7 @@ for (setting in 1:3) {
     xlab(TeX('$\\gamma$')) + ylab('') +
     shared_color_scale +
     labs(color = 'Legend') +
+    ylim(y_limits) +
     ggtitle(paste0('Setting ', setting), ) +
     theme(aspect.ratio = 1,
           axis.text.x = element_text(size = 10, angle = 0),

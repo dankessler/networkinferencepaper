@@ -1,6 +1,7 @@
 library('networkinference')
 library('latex2exp')
 library('tidyverse')
+library('igraph')
 
 ggplot2::theme_set(theme_minimal())
 
@@ -37,6 +38,7 @@ for (connection in connections) {
 }
 
 # Set the upper diagonal of the matrix to also be the same
+zachary_upper_diagonal <- zachary
 zachary <- zachary + t(zachary)
 
 # "True community membership" as determined by "club after fission"
@@ -45,6 +47,57 @@ zachary <- zachary + t(zachary)
 # in Officers' faction.
 true_communities <- c(1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 2, 2, 1, 1, 2,
                       1, 2, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2)
+
+# =====================================================
+# == Create a cartoon for Zachary's karate club data ==
+# =====================================================
+
+# Visualize adjaceny matrix
+zachary_visual_df <- reshape2::melt(zachary)
+colnames(zachary_visual_df) <- c('Row', 'Column', 'Value')
+
+# With numbers for all the cells
+zachary_visual_2 <- ggplot(zachary_visual_df) +
+  geom_tile(aes(x = Column, y = Row, fill = factor(Value)), color = 'gray80') +
+  scale_fill_manual(values = c('1' = 'black', '0' = 'white')) +
+  scale_y_reverse(breaks = 1:n, labels = 1:n, expand = c(0, 0)) +
+  scale_x_continuous(breaks = 1:n, labels = 1:n, expand = c(0, 0), position = 'top') +
+  theme_minimal(base_size = 10) +
+  theme(
+    legend.position = 'none',
+    axis.text.x = element_text(size = 8),
+    panel.background = element_blank()
+  ) +
+  labs(x = NULL, y = NULL)
+
+# Without numbers
+zachary_visual_2 <- ggplot(zachary_visual_df) +
+  geom_tile(aes(x = Column, y = Row, fill = factor(Value)), color = 'gray80') +
+  scale_fill_manual(values = c('1' = 'black', '0' = 'white')) +
+  scale_y_reverse(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0), position = 'top') +
+  theme_minimal(base_size = 10) +
+  theme(
+    legend.position = 'none',
+    axis.text.x = element_blank(),
+    axis.text.y = element_blank(),
+    panel.background = element_blank()
+  ) +
+  labs(x = NULL, y = NULL)
+
+zachary_visual_2
+ggsave('figures/zachary/zachary_cartoon_2.pdf', zachary_visual_2, device = 'pdf',
+       width = 7, height = 7)
+
+# More direct way of showing network
+set.seed(6)
+zach_viz <- graph_from_adjacency_matrix(zachary, mode = c('undirected'),
+                                        weighted = FALSE, diag = FALSE)
+zach_viz_plot <- plot(zach_viz, vertex.size = 13, vertex.color = 'seashell1',
+                      vertex.label.font = 2, vertex.label.color = 'black',
+                      vertex.label.family = 'Helvetica',
+                      vertex.label.cex = 1.4, edge.width=1.2, edge.color='black', margin = 0)
+
 
 # =======================
 # == Helpful functions ==
@@ -192,31 +245,86 @@ for (gamma_index in 1:length(gamma_check)) {
           }
           B0[k, l] <- B0[k, l] / num_0s
           B1[k, l] <- B1[k, l] / num_1s
-          Phi[k, l] <- (num_0s / num_Ikl_pr) * (B0[k, l] / (B0[k, l] + ((1 - B0[k, l]) * gamma / (1-gamma)))) +
-            (num_1s / num_Ikl_pr) * (B1[k, l] / (B1[k, l] + ((1 - B1[k, l]) * (1-gamma) / gamma)))
-          # Phi[k, l] <- (num_0s / num_Ikl_pr) * h0_inv(B0[k, l], gamma) +
-          #   (num_1s / num_Ikl_pr) * h1_inv(B1[k, l], gamma)
 
-          # Variance
-          G1_G2_0 <- (B0[k, l] * (1 - B0[k, l]) * exp(2*c0)) /
-            (num_0s * ((1 - B0[k, l])*exp(c0) + B0[k, l])^4)
-          G1_G2_1 <- (B1[k, l] * (1 - B1[k, l]) * exp(2*c1)) /
-            (num_1s * ((1 - B1[k, l])*exp(c1) + B1[k, l])^4)
+          # Only factor in Ikl_s if num_s > 0
+          Phi_kl_0 <- 0
+          Phi_kl_1 <- 0
+          Delta_kl_0 <- 0
+          Delta_kl_1 <- 0
+          if (num_0s > 0) {
+            # Mean estimate
+            Phi_kl_0 <- (num_0s / num_Ikl_pr) * (B0[k, l] / (B0[k, l] + ((1 - B0[k, l]) * gamma / (1-gamma))))
 
-          G1_G2_0[is.nan(G1_G2_0)] <- Inf
-          G1_G2_1[is.nan(G1_G2_1)] <- Inf
+            # Variance estimate
+            B0_kl_adjust <- B0[k, l]
+            if (B0[k, l] == 0) {
+              B0_kl_adjust <- 1 / (2*num_0s)
+            }
+            if (B0[k, l] == 1) {
+              B0_kl_adjust <- (num_0s - 0.5) / num_0s
+            }
+            Delta_kl_0 <- (B0_kl_adjust * (1 - B0_kl_adjust) * exp(2*c0)) /
+              (num_0s * ((1 - B0[k, l])*exp(c0) + B0[k, l])^4)
+          }
+          if (num_1s > 0) {
+            # Mean estimate
+            Phi_kl_1 <- (num_1s / num_Ikl_pr) * (B1[k, l] / (B1[k, l] + ((1 - B1[k, l]) * (1-gamma) / gamma)))
+
+            # Variance estimate
+            B1_kl_adjust <- B1[k, l]
+            if (B1[k, l] == 0) {
+              B1_kl_adjust <- 1 / (2*num_1s)
+            }
+            if (B1[k, l] == 1) {
+              B1_kl_adjust <- (num_1s - 0.5) / num_1s
+            }
+            Delta_kl_1 <- (B1_kl_adjust * (1 - B1_kl_adjust) * exp(2*c1)) /
+              (num_1s * ((1 - B1[k, l])*exp(c1) + B1[k, l])^4)
+          }
+
+          # Filter the Delta_kl_0 and Delta_kl_1 individually to be bounded
+          # by 0.25
+          Delta_kl_0 <- pmin(Delta_kl_0, 0.25)
+          Delta_kl_1 <- pmin(Delta_kl_1, 0.25)
+
+          # Combine the 0s and 1s to yield the final mean estimate
+          # as well as the final variance estimate
+          Phi[k, l] <- Phi_kl_0 + Phi_kl_1
+          Delta[k, l] <- (num_0s / num_Ikl_pr)^2 * Delta_kl_0 +
+            (num_1s / num_Ikl_pr)^2 * Delta_kl_1
+
+
+          # For the variance calculation only, if B0 or B1 is exactly 0 or 1, then
+          # shrink it a small amount toward 1/2.
+          # B0_kl_var <- B0[k, l]
+          # B1_kl_var <- B1[k, l]
+          # if (B0[k, l] == 0) {
+          #   B0_kl_var <- 1 / num_0s
+          # }
+          # if (B1[k, l] == 1) {
+          #   B1_kl_var <- (num_1s - 1) / num_1s
+          # }
+          #
+          # # Variance
+          # G1_G2_0 <- (B0_kl_var * (1 - B0_kl_var) * exp(2*c0)) /
+          #   (num_0s * ((1 - B0_kl_var)*exp(c0) + B0_kl_var)^4)
+          # G1_G2_1 <- (B1_kl_var * (1 - B1_kl_var) * exp(2*c1)) /
+          #   (num_1s * ((1 - B1_kl_var)*exp(c1) + B1_kl_var)^4)
+          #
+          # G1_G2_0[is.nan(G1_G2_0)] <- Inf
+          # G1_G2_1[is.nan(G1_G2_1)] <- Inf
 
           # Should we make really wide confidence intervals when G1_G2_0 is 0?
-          G1_G2_0[G1_G2_0 == 0] <- Inf
-          G1_G2_1[G1_G2_1 == 0] <- Inf
+          # G1_G2_0[G1_G2_0 == 0] <- Inf
+          # G1_G2_1[G1_G2_1 == 0] <- Inf
 
-          G1_G2_0 <- pmin(G1_G2_0, 0.25)
-          G1_G2_1 <- pmin(G1_G2_1, 0.25)
+          # G1_G2_0 <- pmin(G1_G2_0, 0.25)
+          # G1_G2_1 <- pmin(G1_G2_1, 0.25)
 
 
           # Delta0 <- ((B0[k, l] * (1 - B0[k, l])) / num_0s) * (h0_inv_deriv(B0[k, l], gamma))^2
           # Delta1 <- ((B1[k, l] * (1 - B1[k, l])) / num_1s) * (h1_inv_deriv(B1[k, l], gamma))^2
-          Delta[k, l] <- (num_0s / num_Ikl_pr)^2 * G1_G2_0 + (num_1s / num_Ikl_pr)^2 * G1_G2_1
+          # Delta[k, l] <- (num_0s / num_Ikl_pr)^2 * G1_G2_0 + (num_1s / num_Ikl_pr)^2 * G1_G2_1
         }
       }
 
