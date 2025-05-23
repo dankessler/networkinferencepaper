@@ -14,7 +14,7 @@ set.seed(1)
 # == Simulation ==
 # ================
 
-num_sim <- 2000 # TODO: Raise this number
+num_sim <- 5000
 n <- 100
 K <- 2
 # gamma_check <- c(0.001, seq(0.05, 0.5, length.out = 10))
@@ -122,8 +122,8 @@ avg_Phikl <- apply(Phikl_results, c(1, 2), mean)
 # Legend labels
 legend_values <- c('vkl_bkl' = 'deepskyblue3',
                    'phikl_bkl' = 'firebrick2')
-legend_labels <- c('vkl_bkl' = TeX('$|V_{1,1} - B_{1,1}|$'),
-                   'phikl_bkl' = TeX('$|\\Phi_{1,1} - B_{1,1}|$'))
+legend_labels <- c('vkl_bkl' = TeX('$|V_{11}(A^{(tr)}) - B_{11}(A^{(tr)})|$'),
+                   'phikl_bkl' = TeX('$|\\Phi_{11}(A^{(tr)}) - B_{11}(A^{(tr)})|$'))
 shared_color_scale <- scale_color_manual(values = legend_values,
                                          labels = legend_labels,
                                          breaks = c('vkl_bkl', 'phikl_bkl'))
@@ -150,8 +150,8 @@ for (setting in 1:3) {
     ylim(y_limits) +
     ggtitle(paste0('Setting ', setting), ) +
     theme(aspect.ratio = 1,
-          axis.text.x = element_text(size = 10, angle = 0),
-          axis.text.y = element_text(size = 10),
+          axis.text.x = element_text(size = 7.8, angle = 0),
+          axis.text.y = element_text(size = 7.8),
           axis.title.x = element_text(size = 18),
           axis.title.y = element_text(size = 16),
           plot.title = element_text(hjust = 0.5, size = 12),
@@ -168,7 +168,7 @@ row_plots
 
 # Save plot
 width <- 20
-height <- width * (3.40 / 10)
+height <- width * (2.9 / 10)
 
 ggsave('figures/bernoulli_fission_logic.pdf', plot = row_plots,
        device = 'pdf', width = width, height = height,
