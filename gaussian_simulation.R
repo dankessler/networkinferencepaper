@@ -567,7 +567,7 @@ for (ri in 1:length(rho_2_check)) {
     geom_line(aes(x = eps, y = ci_width, color = rho_1_minus_rho_2), size = 1.0, alpha = 0.7, data = df_subset)
 }
 figure2a <- figure2a +
-  xlab(TeX('$\\epsilon$')) + ylab('Average CI width') +
+  xlab(TeX('$\\epsilon$')) + ylab('Average 90% CI width') +
   scale_color_manual(breaks = c('1', '3', '5', '7', '9'), values = legend_colors) +
   # ggtitle(TeX('Average confidence interval width as a function of $\\epsilon$')) +
   labs(color = TeX('$\\rho_1 - \\rho_2$')) +
