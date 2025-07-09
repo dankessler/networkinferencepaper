@@ -770,7 +770,7 @@ alpha <- 0.10
 # Figure 2a - CI width as a function of signal, separate by gamma
 # -----------------------------------------------------------------
 ci_width <- 2 * qnorm(1 - alpha / 2) * sqrt(xi_variances_thinning[n_index, K_true_index, K_index, , , ])
-ci_width_true <- 2 * qnorm(1 - alpha / 2) * sqrt(xi_variances_true_thinning[n_index, K_true_index, K_index, , , ])
+ci_width_true <- 2 * qnorm(1 - alpha / 2) * sqrt(xi_variances_thinning[n_index, K_true_index, K_index, , , ])
 # ci_width <- (2 * qnorm(1 - alpha / 2) * sqrt(xi_variances_thinning[n_index, K_true_index, K_index, , , ])) / sqrt(xi_est_thinning[n_index, K_true_index, K_index, , , ])
 ci_width <- apply(ci_width, c(1, 2), mean)
 ci_width_true <- apply(ci_width_true, c(1, 2), mean)
@@ -786,7 +786,8 @@ plot_df <- data.frame(signal_index = as.vector(signal_index_plotting),
                       #signal_name = paste0('rho_2 = ', as.vector(rho_2_plotting)),
                       ci_width = as.vector(ci_width),
                       ci_width_true = as.vector(ci_width_true),
-                      gamma = as.vector(gamma_index_plotting))
+                      gamma = as.vector(gamma_index_plotting),
+                      one_minus_gamma = 1 - as.vector(gamma_index_plotting))
 
 legend_colors <- c('0.2' = 'gold3', '0.25' = 'darkseagreen4',
                    '0.3' = 'darkslategray4', '0.35' = 'deeppink4',
@@ -801,10 +802,10 @@ for (ri in 1:length(rho_2_check)) {
   # figure2a <- figure2a +
   #   geom_line(aes(x = gamma, y = ci_width, color = rho_1_minus_rho_2), linewidth = 1.0, alpha = 0.7, data = df_subset)
   figure2a <- figure2a +
-    geom_line(aes(x = gamma, y = ci_width_true, color = rho_1_minus_rho_2), linewidth = 1.0, alpha = 0.7, data = df_subset)
+    geom_line(aes(x = one_minus_gamma, y = ci_width_true, color = rho_1_minus_rho_2), linewidth = 1.0, alpha = 0.7, data = df_subset)
 }
 figure2a <- figure2a +
-  xlab(TeX('$\\gamma$')) + ylab('Average 90% CI width') +
+  xlab(TeX('$1-\\gamma$')) + ylab('Average 90% CI width') +
   scale_color_manual(breaks = c('0.2', '0.25', '0.3', '0.35', '0.4'), values = legend_colors) +
   # ggtitle(TeX('Average confidence interval width as a function of $\\gamma$')) +
   labs(color = TeX('$\\rho_1 - \\rho_2$')) +
@@ -837,11 +838,12 @@ plot_df <- data.frame(signal_index = as.vector(signal_index_plotting),
                       rho_2 = as.character(as.vector(rho_2_plotting)),
                       rho_1_minus_rho_2 = as.character(as.vector(rho_1_minus_rho_2_plotting)),
                       rand_index = as.vector(rand_slice),
-                      gamma = as.vector(gamma_index_plotting))
+                      gamma = as.vector(gamma_index_plotting),
+                      one_minus_gamma = 1 - as.vector(gamma_index_plotting))
 figure2b <- ggplot(plot_df) +
-  geom_line(aes(x = gamma, y = rand_index, color = rho_1_minus_rho_2), size = 0.9) +
+  geom_line(aes(x = one_minus_gamma, y = rand_index, color = rho_1_minus_rho_2), linewidth = 0.9) +
   scale_color_manual(breaks = c('100', '101', '102', '103', '104'), values = legend_colors) + # breaks are wrong because I don't want a legend to appear...
-  xlab(TeX('$\\gamma')) + ylab('Adjusted RAND Index') +
+  xlab(TeX('$1-\\gamma')) + ylab('Adjusted RAND Index') +
   coord_fixed() +
   ylim(c(-0.0002, 1.0)) +
   #ggtitle(TeX('Classification accuracy (Adjusted RAND index) as a function of $\\gamma$')) +

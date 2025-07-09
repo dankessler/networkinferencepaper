@@ -31,7 +31,7 @@ K_check <- c(2, 5, 10) # Guessed number of communities
 K_true_check <- c(5)
 eps_check <- c(0.5)
 signal_regimes <- list(c(30, 27)) # Signal regimes for mean matrix
-sigma2 <- 25
+tau2 <- 25
 
 alpha <- 0.10
 use_random_u <- FALSE
@@ -48,7 +48,7 @@ K_check <- c(2, 5, 10) # Guessed number of communities
 K_true_check <- c(5)
 eps_check <- c(0.5)
 signal_regimes <- list(c(30, 27)) # Signal regimes for mean matrix
-sigma2 <- 25
+tau2 <- 25
 
 alpha <- 0.10
 use_random_u <- FALSE
@@ -65,7 +65,7 @@ K_check <- c(5) # Guessed number of communities
 K_true_check <- c(5)
 eps_check <- c(0.10, 0.20, 0.30, 0.40, 0.50, 0.60, 0.70, 0.80, 0.90)
 signal_regimes <- list(c(30, 29), c(30, 27), c(30, 25), c(30, 23), c(30, 21)) # Signal regimes for mean matrix
-sigma2 <- 25
+tau2 <- 25
 
 alpha <- 0.10
 use_random_u <- FALSE
@@ -209,12 +209,12 @@ for (n_index in 1:length(n_check)) {
             }
 
             # Draw A
-            A <- matrix(rnorm(n = n^2, mean = as.vector(M), sd = sqrt(sigma2)), nrow = n)
+            A <- matrix(rnorm(n = n^2, mean = as.vector(M), sd = sqrt(tau2)), nrow = n)
 
             # Split A using the split_matrix() function
             A_split <- networkinference::split_matrix(A, distribution = 'gaussian',
                                                       epsilon = eps, allow_self_loops = TRUE,
-                                                      is_directed = TRUE, sigma = sqrt(sigma2))
+                                                      is_directed = TRUE, tau = sqrt(tau2))
             A_tr <- A_split$Atr
             A_te <- A_split$Ate
 
@@ -240,13 +240,13 @@ for (n_index in 1:length(n_check)) {
             # Target and estimator (thinning)
             NN_inv <- diag(1 / diag(t(z_hat) %*% z_hat))
             estimate <- (1 - eps)^(-1) * t(u) %*% as.vector(NN_inv %*% t(z_hat) %*% A_te %*% z_hat %*% NN_inv)
-            estimate_var <- (1 - eps)^(-1) * sigma2 * t(u) %*% kronecker(NN_inv, NN_inv) %*% u
+            estimate_var <- (1 - eps)^(-1) * tau2 * t(u) %*% kronecker(NN_inv, NN_inv) %*% u
             target <- t(u) %*% as.vector(NN_inv %*% t(z_hat) %*% M %*% z_hat %*% NN_inv)
 
             # Target and estimator (naive)
             NN_inv_naive <- diag(1 / diag(t(z_hat_naive) %*% z_hat_naive))
             estimate_naive <- t(u) %*% as.vector(NN_inv_naive %*% t(z_hat_naive) %*% A %*% z_hat_naive %*% NN_inv_naive)
-            estimate_var_naive <- sigma2 * t(u) %*% kronecker(NN_inv_naive, NN_inv_naive) %*% u
+            estimate_var_naive <- tau2 * t(u) %*% kronecker(NN_inv_naive, NN_inv_naive) %*% u
             target_naive <- t(u) %*% as.vector(NN_inv_naive %*% t(z_hat_naive) %*% M %*% z_hat_naive %*% NN_inv_naive)
 
             # Construct a confidence interval for the target of inference
