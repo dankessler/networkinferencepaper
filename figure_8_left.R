@@ -56,4 +56,7 @@ zach_viz_plot <- plot(zach_viz, vertex.size = 13, vertex.color = 'seashell1',
                       vertex.label.family = 'Helvetica',
                       vertex.label.cex = 1.4, edge.width=1.2, edge.color='black', margin = 0)
 
-# TODO: Save this created plot into a .PDF with code somehow, matching the margins of the text.
+# Note for reader: I had a difficult time creating a line of code to save the
+# plot at the exact margins and aspect ratio that I was hoping for, so I
+# used a screenshot tool with the plot stretched out large in RStudio so
+# that I could get a good resolution.

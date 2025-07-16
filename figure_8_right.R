@@ -66,6 +66,5 @@ zachary_visual <- ggplot(zachary_visual_df) +
   labs(x = NULL, y = NULL)
 
 zachary_visual
-ggsave('figures/zachary/zachary_cartoon_adjacency_matrix.pdf', zachary_visual, device = 'pdf',
+ggsave('figures/zachary_cartoon_adjacency_matrix.pdf', zachary_visual, device = 'pdf',
        width = 7, height = 7)
-# TODO: this saved title is not the same as it is currently listed in Overleaf so be careful!

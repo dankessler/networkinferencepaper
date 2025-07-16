@@ -29,27 +29,19 @@ gamma_check <- c(0.001, 0.005, 0.01, 0.015, 0.02, 0.03, 0.04, 0.05, 0.075, 0.10,
 # ====================== #
 
 xi_est_thinning <- array(0, dim = c(length(n_check),
-                                    length(K_true_check),
                                     length(K_check),
-                                    length(signal_regimes),
                                     length(gamma_check),
                                     num_sim))
 xi_target_thinning <- array(0, dim = c(length(n_check),
-                                       length(K_true_check),
                                        length(K_check),
-                                       length(signal_regimes),
                                        length(gamma_check),
                                        num_sim))
 theta_target_thinning <- array(0, dim = c(length(n_check),
-                                          length(K_true_check),
                                           length(K_check),
-                                          length(signal_regimes),
                                           length(gamma_check),
                                           num_sim))
 xi_variances_thinning <- array(0, dim = c(length(n_check),
-                                          length(K_true_check),
                                           length(K_check),
-                                          length(signal_regimes),
                                           length(gamma_check),
                                           num_sim))
 
@@ -101,7 +93,8 @@ for (n_index in 1:length(n_check)) {
           networkinference::infer_network(Ate = Ate, u = u,
                                           communities = z_hat,
                                           distribution = "bernoulli",
-                                          K = K, gamma = gamma)
+                                          K = K, gamma = gamma,
+                                          Atr = Atr)
         estimate <- fission_infer$estimate
         estimate_var <- fission_infer$estimate_variance
         target_theta <- networkinference::check_target_of_inference(M = M, u = u,
@@ -116,13 +109,13 @@ for (n_index in 1:length(n_check)) {
 
         # Save results
         # ------------
-        xi_est_thinning[n_index, K_true_index, K_index, signal_regime_index, gamma_index, rep] <-
+        xi_est_thinning[n_index, K_index, gamma_index, rep] <-
           estimate
-        xi_target_thinning[n_index, K_true_index, K_index, signal_regime_index, gamma_index, rep] <-
+        xi_target_thinning[n_index, K_index, gamma_index, rep] <-
           target_xi
-        theta_target_thinning[n_index, K_true_index, K_index, signal_regime_index, gamma_index, rep] <-
+        theta_target_thinning[n_index, K_index, gamma_index, rep] <-
           target_theta
-        xi_variances_thinning[n_index, K_true_index, K_index, signal_regime_index, gamma_index, rep] <-
+        xi_variances_thinning[n_index, K_index, gamma_index, rep] <-
           estimate_var
       }
     }
@@ -133,10 +126,10 @@ for (n_index in 1:length(n_check)) {
 # == Save/load results (saves computation time) == #
 # ================================================ #
 
-saveRDS(xi_est_thinning, file = "saved_simulation_data/figure_7_right_xi_est_thinning.RDS")
-saveRDS(xi_target_thinning, file = "saved_simulation_data/figure_7_right_xi_target_thinning.RDS")
-saveRDS(theta_target_thinning, file = "saved_simulation_data/figure_7_right_theta_target_thinning.RDS")
-saveRDS(xi_variances_thinning, file = "saved_simulation_data/figure_7_right_xi_variances_thinning.RDS")
+# saveRDS(xi_est_thinning, file = "saved_simulation_data/figure_7_right_xi_est_thinning.RDS")
+# saveRDS(xi_target_thinning, file = "saved_simulation_data/figure_7_right_xi_target_thinning.RDS")
+# saveRDS(theta_target_thinning, file = "saved_simulation_data/figure_7_right_theta_target_thinning.RDS")
+# saveRDS(xi_variances_thinning, file = "saved_simulation_data/figure_7_right_xi_variances_thinning.RDS")
 
 xi_est_thinning <- readRDS("saved_simulation_data/figure_7_right_xi_est_thinning.RDS")
 xi_target_thinning <- readRDS("saved_simulation_data/figure_7_right_xi_target_thinning.RDS")
@@ -147,17 +140,19 @@ xi_variances_thinning <- readRDS("saved_simulation_data/figure_7_right_xi_varian
 # == Plot == #
 # ========== #
 
+alpha <- 0.10
 ci_width <- 2 * qnorm(1 - alpha / 2) * sqrt(xi_variances_thinning[n_index, K_index, , ])
 ci_width <- apply(ci_width, 1, mean)
 
 plot_df <- data.frame(ci_width = ci_width,
-                      gamma = gamma_check)
+                      gamma = gamma_check,
+                      one_minus_gamma = 1 - gamma_check)
 
 figure <- ggplot(data = plot_df) +
-  geom_line(aes(x = gamma, y = ci_width), linewidth = 1.0, alpha = 0.7)
+  geom_line(aes(x = one_minus_gamma, y = ci_width), linewidth = 1.0, alpha = 0.7)
 
 figure <- figure +
-  xlab(TeX('$\\gamma$')) + ylab('Average 90% CI width') +
+  xlab(TeX('$1-\\gamma$')) + ylab('Average 90% CI width') +
   theme(aspect.ratio = 1,
         axis.text.x = element_text(size = 16),
         axis.text.y = element_text(size = 16),

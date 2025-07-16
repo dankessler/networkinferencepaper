@@ -1,4 +1,3 @@
-library('networkinference')
 library('latex2exp')
 library('tidyverse')
 library('igraph')
@@ -137,9 +136,9 @@ h0_inv_deriv <- function(x, gamma) {
 # == Check through multiple values of gamma ==
 # ============================================
 
-gamma_check <- seq(0.0001, 0.50, length.out = 20)
+gamma_check <- seq(0.001, 0.50, length.out = 20)
 gamma_check_failed <- rep(FALSE, length.out = length(gamma_check))
-num_sim_per_gamma <- 500
+num_sim_per_gamma <- 200
 
 rand_results_fission_true <- array(0, dim = c(length(gamma_check), num_sim_per_gamma))
 rand_results_fission_full <- array(0, dim = c(length(gamma_check), num_sim_per_gamma))
@@ -332,11 +331,11 @@ for (gamma_index in 1:length(gamma_check)) {
       if (sum(is.nan(Delta)) == 0) {
         need_good_matrix <- FALSE
 
-        u <- c(1, -2, 0, 1)
+        u <- c(1, 0, -2, 1)
         u <- u / sqrt(sum(u^2))
 
         # Build a confidence interval
-        alpha <- 0.90
+        alpha <- 0.10
         estimate <- t(u) %*% as.vector(Phi)
         estimate_var <- t(u) %*% diag(as.vector(Delta)) %*% u
         margin_of_error <- qnorm(1 - alpha / 2) * sqrt(estimate_var)
@@ -345,6 +344,8 @@ for (gamma_index in 1:length(gamma_check)) {
         ci_midpoint[gamma_index, rep] <- estimate
         ci_lower[gamma_index, rep] <- estimate - margin_of_error
         ci_upper[gamma_index, rep] <- estimate + margin_of_error
+      } else {
+        cat("Bad matrix!\n")
       }
       if (times_good_matrix_attempted > limits_on_attempts) {
         need_good_matrix <- FALSE
@@ -358,7 +359,7 @@ for (gamma_index in 1:length(gamma_check)) {
 # == Also do estimation with true known communities ==
 # ====================================================
 
-u <- c(1, -2, 0, 1)
+u <- c(1, 0, -2, 1)
 u <- u / sqrt(sum(u^2))
 
 z_true <- matrix(rep(NA, n*K), nrow = n)
@@ -366,7 +367,6 @@ for (i in 1:K) {
   z_true[, i] <- 1 * (true_communities == i)
 }
 n_true <- apply(z_true, 2, sum)
-NN_true_inv <- diag(1 / diag(t(z_true) %*% z_true))
 
 zachary_matrix_est <- matrix(0, nrow = K, ncol = K)
 zachary_matrix_var_est <- matrix(0, nrow = K, ncol = K)
@@ -396,7 +396,7 @@ for (k in 1:K) {
 }
 
 # Build a confidence interval
-alpha <- 0.90
+alpha <- 0.10
 estimate_true <- t(u) %*% as.vector(zachary_matrix_est)
 estimate_true_var <- t(u) %*% diag(as.vector(zachary_matrix_var_est)) %*% u
 margin_of_error_true <- qnorm(1 - alpha / 2) * sqrt(estimate_true_var)

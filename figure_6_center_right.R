@@ -145,6 +145,7 @@ for (n_index in 1:length(n_check)) {
               networkinference::infer_network(Ate = Ate, u = u,
                                               communities = z_hat,
                                               distribution = "bernoulli",
+                                              Atr = Atr,
                                               K = K, gamma = gamma)
             estimate <- fission_infer$estimate
             estimate_var <- fission_infer$estimate_variance
@@ -179,10 +180,10 @@ for (n_index in 1:length(n_check)) {
 # == Save/load results (saves computation time) == #
 # ================================================ #
 
-saveRDS(xi_est_thinning, file = "saved_simulation_data/figure_6_center_right_xi_est_thinning.RDS")
-saveRDS(xi_target_thinning, file = "saved_simulation_data/figure_6_center_right_xi_target_thinning.RDS")
-saveRDS(theta_target_thinning, file = "saved_simulation_data/figure_6_center_right_theta_target_thinning.RDS")
-saveRDS(xi_variances_thinning, file = "saved_simulation_data/figure_6_center_right_xi_variances_thinning.RDS")
+# saveRDS(xi_est_thinning, file = "saved_simulation_data/figure_6_center_right_xi_est_thinning.RDS")
+# saveRDS(xi_target_thinning, file = "saved_simulation_data/figure_6_center_right_xi_target_thinning.RDS")
+# saveRDS(theta_target_thinning, file = "saved_simulation_data/figure_6_center_right_theta_target_thinning.RDS")
+# saveRDS(xi_variances_thinning, file = "saved_simulation_data/figure_6_center_right_xi_variances_thinning.RDS")
 
 xi_est_thinning <- readRDS("saved_simulation_data/figure_6_center_right_xi_est_thinning.RDS")
 xi_target_thinning <- readRDS("saved_simulation_data/figure_6_center_right_xi_target_thinning.RDS")
@@ -225,12 +226,13 @@ center_figure <- ggplot(plot_df) +
         legend.text = element_text(size = 15))
 center_figure
 ggsave('figures/randindex_gamma_bernoulli.pdf',
-       plot = figure2b, device = 'pdf', width = 4.5, height = 3.5)
+       plot = center_figure, device = 'pdf', width = 4.5, height = 3.5)
 
 # ====================== #
 # == Plot right panel == #
 # ====================== #
 
+alpha <- 0.10
 ci_width <- 2 * qnorm(1 - alpha / 2) * sqrt(xi_variances_thinning[n_index, K_true_index, K_index, , , ])
 ci_width <- apply(ci_width, c(1, 2), mean)
 
@@ -253,7 +255,7 @@ right_figure <- ggplot()
 for (ri in 1:length(rho_2_check)) {
   df_subset <- plot_df[plot_df$rho_2 == rho_2_check[ri], ]
   right_figure <- right_figure +
-    geom_line(aes(x = one_minus_gamma, y = ci_width_true, color = rho_1_minus_rho_2), linewidth = 1.0, alpha = 0.7, data = df_subset)
+    geom_line(aes(x = one_minus_gamma, y = ci_width, color = rho_1_minus_rho_2), linewidth = 1.0, alpha = 0.7, data = df_subset)
 }
 right_figure <- right_figure +
   xlab(TeX('$1-\\gamma$')) + ylab('Average 90% CI width') +
