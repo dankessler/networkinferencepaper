@@ -135,8 +135,8 @@ for (n_index in 1:length(n_check)) {
             A <- matrix(rpois(n = n^2, lambda = as.vector(M)), nrow = n)
 
             # Split A
-            A_split <- networkinference::split_matrix(A, distribution = "poisson",
-                                                      epsilon = eps)
+            A_split <- networkinference::split_network(A, distribution = "poisson",
+                                                       epsilon = eps)
             Atr <- A_split$Atr
             Ate <- A_split$Ate
 

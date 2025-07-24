@@ -86,9 +86,9 @@ for (n_index in 1:length(n_check)) {
         # Draw A
         A <- matrix(rpois(n = n^2, lambda = as.vector(M)), nrow = n)
 
-        # Split A using the split_matrix() function
-        A_split <- networkinference::split_matrix(A, distribution = 'poisson',
-                                                  epsilon = eps)
+        # Split A using the split_network() function
+        A_split <- networkinference::split_network(A, distribution = 'poisson',
+                                                   epsilon = eps)
         A_tr <- A_split$Atr
         A_te <- A_split$Ate
 
@@ -159,12 +159,12 @@ for (n_index in 1:length(n_check)) {
 # == Save/load results (saves computation time) == #
 # ================================================ #
 
-saveRDS(estimates_thinning, file = "saved_simulation_data/figure_s2_right_estimates_thinning.RDS")
-saveRDS(targets_thinning, file = "saved_simulation_data/figure_s2_right_targets_thinning.RDS")
-saveRDS(variances_thinning, file = "saved_simulation_data/figure_s2_right_variances_thinning.RDS")
-saveRDS(estimates_naive, file = "saved_simulation_data/figure_s2_right_estimates_naive.RDS")
-saveRDS(targets_naive, file = "saved_simulation_data/figure_s2_right_targets_naive.RDS")
-saveRDS(variances_naive, file = "saved_simulation_data/figure_s2_right_variances_naive.RDS")
+# saveRDS(estimates_thinning, file = "saved_simulation_data/figure_s2_right_estimates_thinning.RDS")
+# saveRDS(targets_thinning, file = "saved_simulation_data/figure_s2_right_targets_thinning.RDS")
+# saveRDS(variances_thinning, file = "saved_simulation_data/figure_s2_right_variances_thinning.RDS")
+# saveRDS(estimates_naive, file = "saved_simulation_data/figure_s2_right_estimates_naive.RDS")
+# saveRDS(targets_naive, file = "saved_simulation_data/figure_s2_right_targets_naive.RDS")
+# saveRDS(variances_naive, file = "saved_simulation_data/figure_s2_right_variances_naive.RDS")
 
 estimates_thinning <- readRDS("saved_simulation_data/figure_s2_right_estimates_thinning.RDS")
 targets_thinning <- readRDS("saved_simulation_data/figure_s2_right_targets_thinningRDS")

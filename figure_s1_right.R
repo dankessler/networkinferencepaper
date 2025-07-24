@@ -87,10 +87,10 @@ for (n_index in 1:length(n_check)) {
         # Draw A
         A <- matrix(rnorm(n = n^2, mean = as.vector(M), sd = sqrt(tau2)), nrow = n)
 
-        # Split A using the split_matrix() function
-        A_split <- networkinference::split_matrix(A, distribution = 'gaussian',
-                                                  epsilon = eps, allow_self_loops = TRUE,
-                                                  is_directed = TRUE, tau = sqrt(tau2))
+        # Split A using the split_network() function
+        A_split <- networkinference::split_network(A, distribution = 'gaussian',
+                                                   epsilon = eps, allow_self_loops = TRUE,
+                                                   is_directed = TRUE, tau = sqrt(tau2))
         A_tr <- A_split$Atr
         A_te <- A_split$Ate
 
@@ -163,15 +163,15 @@ for (n_index in 1:length(n_check)) {
 # == Save/load results (saves computation time) == #
 # ================================================ #
 
-saveRDS(estimates_thinning, file = "saved_simulation_data/figure_s1_right_estimates_thinning.RDS")
-saveRDS(targets_thinning, file = "saved_simulation_data/figure_s1_right_targets_thinning.RDS")
-saveRDS(variances_thinning, file = "saved_simulation_data/figure_s1_right_variances_thinning.RDS")
-saveRDS(estimates_naive, file = "saved_simulation_data/figure_s1_right_estimates_naive.RDS")
-saveRDS(targets_naive, file = "saved_simulation_data/figure_s1_right_targets_naive.RDS")
-saveRDS(variances_naive, file = "saved_simulation_data/figure_s1_right_variances_naive.RDS")
+# saveRDS(estimates_thinning, file = "saved_simulation_data/figure_s1_right_estimates_thinning.RDS")
+# saveRDS(targets_thinning, file = "saved_simulation_data/figure_s1_right_targets_thinning.RDS")
+# saveRDS(variances_thinning, file = "saved_simulation_data/figure_s1_right_variances_thinning.RDS")
+# saveRDS(estimates_naive, file = "saved_simulation_data/figure_s1_right_estimates_naive.RDS")
+# saveRDS(targets_naive, file = "saved_simulation_data/figure_s1_right_targets_naive.RDS")
+# saveRDS(variances_naive, file = "saved_simulation_data/figure_s1_right_variances_naive.RDS")
 
 estimates_thinning <- readRDS("saved_simulation_data/figure_s1_right_estimates_thinning.RDS")
-targets_thinning <- readRDS("saved_simulation_data/figure_s1_right_targets_thinningRDS")
+targets_thinning <- readRDS("saved_simulation_data/figure_s1_right_targets_thinning.RDS")
 variances_thinning <- readRDS("saved_simulation_data/figure_s1_right_variances_thinning.RDS")
 estimates_naive <- readRDS("saved_simulation_data/figure_s1_right_estimates_naive.RDS")
 targets_naive <- readRDS("saved_simulation_data/figure_s1_right_targets_naive.RDS")

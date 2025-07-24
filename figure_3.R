@@ -59,8 +59,8 @@ for (gamma_index in 1:length(gamma_check)) {
       # Draw and fission matrix
       A <- matrix(rbinom(n^2, 1, as.vector(M)), nrow = n, ncol = n)
 
-      split_A <- networkinference::split_matrix(A, distribution = "bernoulli",
-                                                gamma = gamma)
+      split_A <- networkinference::split_network(A, distribution = "bernoulli",
+                                                 gamma = gamma)
       Atr <- split_A$Atr
 
       # Cluster with Atr

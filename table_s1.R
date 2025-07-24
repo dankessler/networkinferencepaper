@@ -196,11 +196,11 @@ for (n_index in 1:length(n_check)) {
             A_poisson <- matrix(rpois(n = n^2, lambda = as.vector(M)), nrow = n)
 
             # Split A
-            A_split_gaussian <- networkinference::split_matrix(A_gaussian, distribution = 'gaussian',
-                                                               epsilon = eps, allow_self_loops = TRUE,
-                                                               is_directed = TRUE, tau = sqrt(tau2))
-            A_split_poisson <- networkinference::split_matrix(A_poisson, distribution = "poisson",
-                                                      epsilon = eps)
+            A_split_gaussian <- networkinference::split_network(A_gaussian, distribution = 'gaussian',
+                                                                epsilon = eps, allow_self_loops = TRUE,
+                                                                is_directed = TRUE, tau = sqrt(tau2))
+            A_split_poisson <- networkinference::split_network(A_poisson, distribution = "poisson",
+                                                               epsilon = eps)
 
 
             Atr_gaussian <- A_split_gaussian$Atr

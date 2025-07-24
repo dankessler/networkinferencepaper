@@ -123,9 +123,9 @@ for (n_index in 1:length(n_check)) {
             A <- matrix(rnorm(n = n^2, mean = as.vector(M), sd = sqrt(tau2)), nrow = n)
 
             # Split A
-            A_split <- networkinference::split_matrix(A, distribution = 'gaussian',
-                                                      epsilon = eps, allow_self_loops = TRUE,
-                                                      is_directed = TRUE, tau = sqrt(tau2))
+            A_split <- networkinference::split_network(A, distribution = 'gaussian',
+                                                       epsilon = eps, allow_self_loops = TRUE,
+                                                       is_directed = TRUE, tau = sqrt(tau2))
             Atr <- A_split$Atr
             Ate <- A_split$Ate
 
