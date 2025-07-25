@@ -151,24 +151,22 @@ for (n_index in 1:length(n_check)) {
               networkinference::infer_network(Ate = Ate, u = u,
                                               communities = z_hat,
                                               distribution = "gaussian",
-                                              K = K, epsilon = eps, tau = sqrt(tau2))
+                                              epsilon = eps, tau = sqrt(tau2))
             estimate <- thinning_infer$estimate
             estimate_var <- thinning_infer$estimate_variance
             target <- networkinference::check_target_of_inference(M = M, u = u,
-                                                                  communities = z_hat,
-                                                                  K = K)
+                                                                  communities = z_hat)
 
             # Estimator, estimator variance, and target for the naive approach
             naive_infer <-
               networkinference::infer_network(Ate = A, u = u,
                                               communities = z_hat_naive,
                                               distribution = "gaussian",
-                                              K = K, epsilon = 0, tau = sqrt(tau2))
+                                              epsilon = 0, tau = sqrt(tau2))
             estimate_naive <- naive_infer$estimate
             estimate_var_naive <- naive_infer$estimate_variance
             target_naive <- networkinference::check_target_of_inference(M = M, u = u,
-                                                                        communities = z_hat_naive,
-                                                                        K = K)
+                                                                        communities = z_hat_naive)
 
             # Save results
             # ------------

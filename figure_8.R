@@ -91,7 +91,7 @@ for (gamma_index in 1:length(gamma_check)) {
                                                           u = u,
                                                           communities = z_hat_initial,
                                                           distribution = "bernoulli",
-                                                          K = K, gamma = gamma,
+                                                          gamma = gamma,
                                                           Atr = dolphins_tr,
                                                           allow_self_loops = FALSE,
                                                           is_directed = FALSE)

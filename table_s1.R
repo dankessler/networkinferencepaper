@@ -219,12 +219,12 @@ for (n_index in 1:length(n_check)) {
               networkinference::infer_network(Ate = Ate_gaussian, u = u,
                                               communities = z_hat_gaussian,
                                               distribution = "gaussian",
-                                              K = K, epsilon = eps, tau = sqrt(tau2))
+                                              epsilon = eps, tau = sqrt(tau2))
             thinning_infer_poisson <-
               networkinference::infer_network(Ate = Ate_poisson, u = u,
                                               communities = z_hat_poisson,
                                               distribution = "poisson",
-                                              K = K, epsilon = eps, tau = sqrt(tau2))
+                                              epsilon = eps, tau = sqrt(tau2))
 
             estimate_gaussian <- thinning_infer_gaussian$estimate
             estimate_poisson <- thinning_infer_poisson$estimate
@@ -233,23 +233,21 @@ for (n_index in 1:length(n_check)) {
             estimate_var_poisson <- thinning_infer_poisson$estimate_variance
 
             target_gaussian <- networkinference::check_target_of_inference(M = M, u = u,
-                                                                           communities = z_hat_gaussian,
-                                                                           K = K)
+                                                                           communities = z_hat_gaussian)
             target_poisson <- networkinference::check_target_of_inference(M = M, u = u,
-                                                                          communities = z_hat_poisson,
-                                                                          K = K)
+                                                                          communities = z_hat_poisson)
 
             # Estimator, estimator variance, and target for the naive approach
             naive_infer_gaussian <-
               networkinference::infer_network(Ate = A_gaussian, u = u,
                                               communities = z_hat_naive_gaussian,
                                               distribution = "gaussian",
-                                              K = K, epsilon = 0, tau = sqrt(tau2))
+                                              epsilon = 0, tau = sqrt(tau2))
             naive_infer_poisson <-
               networkinference::infer_network(Ate = A_poisson, u = u,
                                               communities = z_hat_naive_poisson,
                                               distribution = "poisson",
-                                              K = K, epsilon = 0)
+                                              epsilon = 0)
 
             estimate_naive_gaussian <- naive_infer_gaussian$estimate
             estimate_naive_poisson <- naive_infer_poisson$estimate
@@ -258,11 +256,9 @@ for (n_index in 1:length(n_check)) {
             estimate_var_naive_poisson <- naive_infer_poisson$estimate_variance
 
             target_naive_gaussian <- networkinference::check_target_of_inference(M = M, u = u,
-                                                                        communities = z_hat_naive_gaussian,
-                                                                        K = K)
+                                                                        communities = z_hat_naive_gaussian)
             target_naive_poisson <- networkinference::check_target_of_inference(M = M, u = u,
-                                                                                 communities = z_hat_naive_poisson,
-                                                                                 K = K)
+                                                                                 communities = z_hat_naive_poisson)
 
             # Save results
             # ------------

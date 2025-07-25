@@ -146,15 +146,13 @@ for (n_index in 1:length(n_check)) {
                                               communities = z_hat,
                                               distribution = "bernoulli",
                                               Atr = Atr,
-                                              K = K, gamma = gamma)
+                                              gamma = gamma)
             estimate <- fission_infer$estimate
             estimate_var <- fission_infer$estimate_variance
             target_theta <- networkinference::check_target_of_inference(M = M, u = u,
-                                                                        communities = z_hat,
-                                                                        K = K)
+                                                                        communities = z_hat)
             target_xi <- networkinference::check_target_of_inference(M = M, u = u,
                                                                      communities = z_hat,
-                                                                     K = K,
                                                                      bernoulli_target = TRUE,
                                                                      gamma = gamma,
                                                                      Atr = Atr)

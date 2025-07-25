@@ -68,11 +68,9 @@ for (gamma_index in 1:length(gamma_check)) {
 
       # Calculate targets
       B <- networkinference::check_target_of_inference(M = M, u = u,
-                                                       communities = z_hat,
-                                                       K = K)
+                                                       communities = z_hat)
       Phi <- networkinference::check_target_of_inference(M = M, u = u,
                                                          communities = z_hat,
-                                                         K = K,
                                                          bernoulli_target = TRUE,
                                                          gamma = gamma,
                                                          Atr = Atr)
